@@ -1,0 +1,169 @@
+import java.text.SimpleDateFormat
+
+plugins {
+    id 'java-library'
+    id 'maven-publish'
+    id 'signing'
+    id 'org.javamodularity.moduleplugin' version '1.8.8'
+    id 'org.beryx.jlink'                 version '2.24.4'
+    id 'net.nemerosa.versioning'         version '2.14.0'
+    id 'biz.aQute.bnd.builder'           version '5.3.0'
+}
+
+apply plugin: 'biz.aQute.bnd.builder'
+apply plugin: 'maven-publish'
+apply plugin: 'signing'
+
+description = 'Toolbox contains a collection of useful tools incl. events, properties, helper classes etc.'
+mainClassName = "$moduleName/eu.hansolo.toolbox/Demo"
+
+Date buildTimeAndDate = new Date()
+ext {
+    moduleName      = 'eu.hansolo.toolbox'
+    buildDate       = new SimpleDateFormat('yyyy-MM-dd').format(buildTimeAndDate)
+    buildTime       = new SimpleDateFormat('HH:mm:ss.SSSZ').format(buildTimeAndDate)
+    ciOssrhUsername = System.getenv('OSSRH_USERNAME')
+    ciOssrhPassword = System.getenv('OSSRH_PASSWORD')
+    ciGHUser        = System.getenv('GH_USER')
+    ciGHToken       = System.getenv('GH_TOKEN')
+    gpgkey          = System.getenv("GPG_PRIVATE_KEY")
+    gpgpassphrase   = System.getenv("PASSPHRASE")
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+}
+
+
+jar {
+    from {
+        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+        configurations.runtimeClasspath.collect {  it.isDirectory() ? it : zipTree(it)  }
+    } {
+        exclude "META-INF/*.SF"
+        exclude "META-INF/*.DSA"
+        exclude "META-INF/*.RSA"
+    }
+    manifest {
+        attributes(
+                'Built-By'              : System.properties['user.name'],
+                'Created-By'            : System.properties['java.version'] + " (" + System.properties['java.vendor'] + " " + System.properties['java.vm.version'] + ")",
+                'Build-Date'            : project.buildDate,
+                'Build-Time'            : project.buildTime,
+                'Build-Revision'        : versioning.info.commit,
+                'Specification-Title'   : project.name,
+                'Specification-Version' : project.version,
+                'Implementation-Title'  : project.name,
+                'Implementation-Version': project.version,
+                'Bundle-Name'           : project.name,
+                'Bundle-License'        : 'https://www.apache.org/licenses/LICENSE-2.0;description=Apache License Version 2.0;link=https://spdx.org/licenses/Apache-2.0.html',
+                'Bundle-Description'    : description,
+                'Bundle-SymbolicName'   : 'eu.hansolo.toolbox',
+                'Export-Package'        : 'eu.hansolo.toolbox,eu.hansolo.toolbox.properties,eu.hansolo.toolbox.evt.eu.hansolo.toolbox.evt.type,eu.hansolo.toolbox.geom,eu.hansolo.toolbox.tuples,eu.hansolo.toolbox.unit',
+                'Class-Path'            : '${project.name}-${project.version}.jar',
+                'Main-Class'            : 'eu.hansolo.toolbox.Demo'
+        )
+    }
+}
+
+
+// start the demo from gradle
+task Demo(type: JavaExec) {
+    main = "eu.hansolo.toolbox/Demo"
+    classpath = sourceSets.main.runtimeClasspath
+}
+
+// create one jar for the javadoc
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    archiveClassifier = 'javadoc'
+    from javadoc.destinationDir
+}
+
+// create one jar for the source files
+task sourcesJar(type: Jar, dependsOn: classes) {
+    archiveClassifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+artifacts {
+    archives jar
+    archives javadocJar
+    archives sourcesJar
+}
+
+signing {
+    if (gpgkey && gpgpassphrase) {
+        useInMemoryPgpKeys(gpgkey, gpgpassphrase)
+    }
+
+    sign configurations.archives
+    sign publishing.publications
+}
+
+publishing {
+    publications {
+        mavenCustom(MavenPublication) {
+            group = 'eu.hansolo'
+            artifactId = 'toolbox'
+            version = "${version}"
+
+            from components.java
+            artifact sourcesJar
+            artifact javadocJar
+
+            pom.withXml {
+                asNode().dependencies.'*'.findAll {
+                    it.groupId.text() == 'org.openjfx'
+                }.each {
+                    it.remove(it.classifier)
+                }
+            }
+
+            pom {
+                name = 'EVT'
+                description = 'Toolbox contains a collection of useful tools incl. events, properties, helper classes etc.'
+                url = "https://github.com/HanSolo/toolbox/wiki"
+                licenses {
+                    license {
+                        name = "The Apache License, Version 2.0"
+                        url = "http://www.apache.org/licenses/LICENSE-2.0.txt"
+                    }
+                }
+                developers {
+                    developer {
+                        id = "HanSolo"
+                        name = "Gerrit Grunwald"
+                        email = "han.solo@mac.com"
+                    }
+                }
+                scm {
+                    connection = "scm:git:https://HanSolo/toolbox"
+                    developerConnection = "scm:git:https://HanSolo/toolbox"
+                    url = "https://github.com/HanSolo/toolbox"
+                }
+            }
+        }
+    }
+
+    repositories {
+        maven {
+            name = "OSSRH"
+            url = 'https://oss.sonatype.org/service/local/staging/deploy/maven2'
+            credentials {
+                username = null == ciOssrhUsername ? ossrhUsername : ciOssrhUsername
+                password = null == ciOssrhPassword ? ossrhPassword : ciOssrhPassword
+            }
+        }
+        maven {
+            name = "GitHubPackages"
+            url = "https://maven.pkg.github.com/HanSolo/toolbox"
+            credentials {
+                username = null == ciGHUser  ? ghUser  : ciGHUser
+                password = null == ciGHToken ? ghToken : ciGHToken
+            }
+        }
+    }
+}
