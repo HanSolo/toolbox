@@ -803,7 +803,7 @@ public class Helper {
                         for (Point p : pointsToCheck) {
                             if(isInRectangle(p.getX(), p.getY(), p1.getX() - width / 2, p1.getY() - height, p1.getX(), p1.getY())) {
                                 if (isVertical(p, p1)) {
-                                    System.out.println("Find next vertical point in gap");
+                                    //System.out.println("Find next vertical point in gap");
                                 }
                             }
                         }
@@ -825,7 +825,7 @@ public class Helper {
                         for (Point p : pointsToCheck) {
                             if(isInRectangle(p.getX(), p.getY(), p1.getX() - width / 2, p1.getY() - height, p1.getX() + width, p1.getY())) {
                                 if (isVertical(p, p1)) {
-                                    System.out.println("Find next vertical point in gap");
+                                    //System.out.println("Find next vertical point in gap");
                                 }
                             }
                         }
@@ -1105,7 +1105,7 @@ public class Helper {
         try {
             Files.write(Paths.get("/" + filename), text.getBytes());
         } catch (IOException e) {
-            System.out.println("Error saving download text file. " + e);
+            //System.out.println("Error saving download text file. " + e);
         }
     }
 

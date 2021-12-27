@@ -203,7 +203,6 @@ public class Location {
         if (!observers.containsKey(type)) { observers.put(type, new CopyOnWriteArrayList<>()); }
         if (observers.get(type).contains(observer)) { return; }
         observers.get(type).add(observer);
-        System.out.println("observer added for type " + type);
     }
     public void removeLocationObserver(final LocationChangeEvt type, final EvtObserver<LocationChangeEvt> observer) {
         if (observers.containsKey(type)) {
