@@ -1,0 +1,3 @@
+package eu.hansolo.toolbox.versioning;
+
+public enum OutputFormat { FULL, REDUCED, REDUCED_ENRICHED, FULL_COMPRESSED, REDUCED_COMPRESSED, REDUCED_ENRICHED_COMPRESSED, MINIMIZED }
