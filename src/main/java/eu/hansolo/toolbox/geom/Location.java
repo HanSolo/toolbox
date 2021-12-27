@@ -2,13 +2,16 @@ package eu.hansolo.toolbox.geom;
 
 import eu.hansolo.toolbox.Constants;
 import eu.hansolo.toolbox.evt.EvtObserver;
+import eu.hansolo.toolbox.evt.EvtType;
 import eu.hansolo.toolbox.evt.type.LocationChangeEvt;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import static eu.hansolo.toolbox.Constants.COLON;
@@ -19,15 +22,15 @@ import static eu.hansolo.toolbox.Constants.QUOTES;
 
 
 public class Location {
-    private final        String                               id;
-    private              Instant                              timestamp;
-    private              double                               latitude;
-    private              double                               longitude;
-    private              double                               altitude;
-    private              double                               accuracy;
-    private              String                               name;
-    private              String                               info;
-    private              List<EvtObserver<LocationChangeEvt>> observers;
+    private final String                                             id;
+    private       Instant                                            timestamp;
+    private       double                                             latitude;
+    private       double                                             longitude;
+    private       double                                             altitude;
+    private       double                                             accuracy;
+    private       String                                             name;
+    private       String                                             info;
+    private       Map<EvtType, List<EvtObserver<LocationChangeEvt>>> observers;
 
 
     // ******************** Constructors **************************************
@@ -43,7 +46,7 @@ public class Location {
         this.accuracy  = accuracy;
         this.name      = name;
         this.info      = info;
-        this.observers = new CopyOnWriteArrayList<>();
+        this.observers = new ConcurrentHashMap<>();
     }
 
 
@@ -196,12 +199,27 @@ public class Location {
 
 
     // ******************** Event handling ************************************
-    public void addLocationObserver(final EvtObserver<LocationChangeEvt> observer) { if (!observers.contains(observer)) { observers.add(observer); } }
-    public void removeLocationObserver(final EvtObserver<LocationChangeEvt> observer) { if (observers.contains(observer)) { observers.remove(observer); }}
+    public void addLocationObserver(final EvtType type, final EvtObserver<LocationChangeEvt> observer) {
+        if (!observers.containsKey(type)) { observers.put(type, new CopyOnWriteArrayList<>()); }
+        if (observers.get(type).contains(observer)) { return; }
+        observers.get(type).add(observer);
+        System.out.println("observer added for type " + type);
+    }
+    public void removeLocationObserver(final LocationChangeEvt type, final EvtObserver<LocationChangeEvt> observer) {
+        if (observers.containsKey(type)) {
+            if (observers.get(type).contains(observer)) {
+                observers.get(type).remove(observer);
+            }
+        }
+    }
     public void removeAllObservers() { observers.clear(); }
 
     public void fireLocationEvent(final LocationChangeEvt evt) {
-        for (EvtObserver<LocationChangeEvt> observer : observers) { observer.handle(evt); }
+        final EvtType type = evt.getEvtType();
+        observers.entrySet().stream().filter(entry -> entry.getKey().equals(LocationChangeEvt.ANY)).forEach(entry -> entry.getValue().forEach(observer -> observer.handle(evt)));
+        if (observers.containsKey(type)) {
+            observers.get(type).forEach(observer -> observer.handle(evt));
+        }
     }
 
 

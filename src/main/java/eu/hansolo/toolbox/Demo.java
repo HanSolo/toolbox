@@ -18,6 +18,7 @@ package eu.hansolo.toolbox;
 
 
 import eu.hansolo.toolbox.evt.EvtObserver;
+import eu.hansolo.toolbox.evt.type.LocationChangeEvt;
 import eu.hansolo.toolbox.evt.type.PropertyChangeEvt;
 import eu.hansolo.toolbox.geom.Location;
 import eu.hansolo.toolbox.properties.BooleanProperty;
@@ -268,7 +269,8 @@ public class Demo {
 
     private void locationDemo() {
         Location home = new Location(7.38, 51.51);
-        home.addLocationObserver(e -> System.out.println(e.getOldLocation() + "\n---------\n" + e.getLocation()));
+        home.addLocationObserver(LocationChangeEvt.LOCATION_CHANGED, e -> System.out.println("Location observer: " + e.getOldLocation() + "\n---------\n" + e.getLocation()));
+        home.addLocationObserver(LocationChangeEvt.ALTITUDE_CHANGED, e -> System.out.println("Altitude observer: " + e.getLocation().getAltitude()));
         home.setLatitude(8.0);
     }
 

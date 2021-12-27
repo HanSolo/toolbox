@@ -3,7 +3,6 @@ package eu.hansolo.toolbox.evt.type;
 import eu.hansolo.toolbox.evt.EvtPriority;
 import eu.hansolo.toolbox.evt.EvtType;
 import eu.hansolo.toolbox.geom.Location;
-import eu.hansolo.toolbox.properties.ReadOnlyProperty;
 
 
 public class LocationChangeEvt extends ChangeEvt {
@@ -11,7 +10,6 @@ public class LocationChangeEvt extends ChangeEvt {
     public static final EvtType<LocationChangeEvt> LOCATION_CHANGED  = new EvtType<>(LocationChangeEvt.ANY, "LOCATION_CHANGED");
     public static final EvtType<LocationChangeEvt> ALTITUDE_CHANGED  = new EvtType<>(LocationChangeEvt.ANY, "ALTITUDE_CHANGED");
     public static final EvtType<LocationChangeEvt> ACCURACY_CHANGED  = new EvtType<>(LocationChangeEvt.ANY, "ACCURACY_CHANGED");
-    public static final EvtType<LocationChangeEvt> CHANGED           = new EvtType<>(LocationChangeEvt.ANY, "CHANGED");
 
     private final Location oldLocation;
     private final Location location;
