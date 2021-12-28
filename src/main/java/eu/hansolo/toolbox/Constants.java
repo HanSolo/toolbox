@@ -6,10 +6,6 @@ import java.util.regex.Pattern;
 
 
 public class Constants {
-    public static final double             EARTH_RADIUS             = 6_371_000; // [m]
-    public static final double             HALF_PI                  = Math.PI * 0.5;
-    public static final double             TWO_PI                   = Math.PI + Math.PI;
-    public static final double             THREE_PI                 = TWO_PI + Math.PI;
     public static final double             EPSILON                  = 1E-6;
     public static final Pattern            INT_PATTERN              = Pattern.compile("[0-9]+");
     public static final Pattern            FLOAT_PATTERN            = Pattern.compile("[-+]?[0-9]*\\.?[0-9]+");

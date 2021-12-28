@@ -35,5 +35,4 @@ public class Statistics {
         final int index = (int) Math.ceil(percentile / 100.0 * entries.size());
         return entries.get(index-1);
     }
-
 }

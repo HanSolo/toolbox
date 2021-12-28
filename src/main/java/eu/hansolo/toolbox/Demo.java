@@ -18,9 +18,7 @@ package eu.hansolo.toolbox;
 
 
 import eu.hansolo.toolbox.evt.EvtObserver;
-import eu.hansolo.toolbox.evt.type.LocationChangeEvt;
 import eu.hansolo.toolbox.evt.type.PropertyChangeEvt;
-import eu.hansolo.toolbox.geom.Location;
 import eu.hansolo.toolbox.properties.BooleanProperty;
 import eu.hansolo.toolbox.properties.DoubleProperty;
 import eu.hansolo.toolbox.properties.IntegerProperty;
@@ -30,7 +28,6 @@ import eu.hansolo.toolbox.properties.ReadOnlyDoubleProperty;
 import eu.hansolo.toolbox.tuples.Pair;
 import eu.hansolo.toolbox.tuples.Quartet;
 import eu.hansolo.toolbox.tuples.Triplet;
-import eu.hansolo.toolbox.tuples.Tuple;
 import eu.hansolo.toolbox.unit.Converter;
 
 import static eu.hansolo.toolbox.unit.Category.BLOOD_GLUCOSE;
@@ -65,8 +62,6 @@ public class Demo {
         tuplesDemo();
 
         converterDemo();
-
-        locationDemo();
     }
 
     private void propertiesDemo() {
@@ -265,13 +260,6 @@ public class Demo {
         System.out.println(Converter.format(1_500_000, 1));
 
         System.out.println(Converter.format(1_000_000, 0));
-    }
-
-    private void locationDemo() {
-        Location home = new Location(7.38, 51.51);
-        home.addLocationObserver(LocationChangeEvt.LOCATION_CHANGED, e -> System.out.println("Location observer: " + e.getOldLocation() + "\n---------\n" + e.getLocation()));
-        home.addLocationObserver(LocationChangeEvt.ALTITUDE_CHANGED, e -> System.out.println("Altitude observer: " + e.getLocation().getAltitude()));
-        home.setLatitude(8.0);
     }
 
 
