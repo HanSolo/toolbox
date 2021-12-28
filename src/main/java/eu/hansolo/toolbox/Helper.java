@@ -67,6 +67,21 @@ public class Helper {
         if (Double.compare(value, max) > 0) return max;
         return value;
     }
+    public static final Instant clamp(final Instant min, final Instant max, final Instant value) {
+        if (value.isBefore(min)) return min;
+        if (value.isAfter(max)) return max;
+        return value;
+    }
+    public static final LocalDateTime clamp(final LocalDateTime min, final LocalDateTime max, final LocalDateTime value) {
+        if (value.isBefore(min)) return min;
+        if (value.isAfter(max)) return max;
+        return value;
+    }
+    public static final LocalDate clamp(final LocalDate min, final LocalDate max, final LocalDate value) {
+        if (value.isBefore(min)) return min;
+        if (value.isAfter(max)) return max;
+        return value;
+    }
 
     public static final double clampMin(final double min, final double value) {
         if (value < min) return min;
