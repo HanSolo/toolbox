@@ -21,8 +21,12 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.time.temporal.ChronoField;
 import java.time.temporal.WeekFields;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Deque;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -30,6 +34,7 @@ import java.util.NavigableMap;
 import java.util.TreeMap;
 import java.util.function.Predicate;
 import java.util.regex.Matcher;
+import java.util.stream.Collector;
 import java.util.zip.CRC32;
 import java.util.zip.Checksum;
 
@@ -169,6 +174,20 @@ public class Helper {
     }
 
     public static final <T> Predicate<T> not(Predicate<T> predicate) { return predicate.negate(); }
+
+    // Get last n elements from stream
+    public static <T> Collector<T, ?, List<T>> lastN(int n) {
+        return Collector.<T, Deque<T>, List<T>>of(ArrayDeque::new, (acc, t) -> {
+            if(acc.size() == n)
+                acc.pollFirst();
+            acc.add(t);
+        }, (acc1, acc2) -> {
+            while(acc2.size() < n && !acc1.isEmpty()) {
+                acc2.addFirst(acc1.pollLast());
+            }
+            return acc2;
+        }, ArrayList::new);
+    }
 
     public static final double getDoubleFromText(final String text) {
         if (null == text || text.isEmpty()) { return 0.0; }
