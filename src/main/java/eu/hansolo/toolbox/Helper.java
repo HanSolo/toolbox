@@ -53,6 +53,7 @@ import java.util.TreeMap;
 import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.stream.Collector;
+import java.util.stream.Collectors;
 import java.util.zip.CRC32;
 import java.util.zip.Checksum;
 
@@ -64,9 +65,11 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 
 public class Helper {
-    private static final Matcher INT_MATCHER   = INT_PATTERN.matcher("");
-    private static final Matcher FLOAT_MATCHER = FLOAT_PATTERN.matcher("");
-    private static final Matcher HEX_MATCHER   = HEX_PATTERN.matcher("");
+    private static final Matcher  INT_MATCHER        = INT_PATTERN.matcher("");
+    private static final Matcher  FLOAT_MATCHER      = FLOAT_PATTERN.matcher("");
+    private static final Matcher  HEX_MATCHER        = HEX_PATTERN.matcher("");
+    private static final String[] DETECT_ALPINE_CMDS = { "/bin/sh", "-c", "cat /etc/os-release | grep 'NAME=' | grep -ic 'Alpine'" };
+
 
 
     public static final <T extends Number> T clamp(final T min, final T max, final T value) {
@@ -511,5 +514,41 @@ public class Helper {
         final StringBuilder builder = new StringBuilder();
         for (byte b : bytes) { builder.append(String.format("%02x", b)); }
         return builder.toString();
+    }
+
+    public static final OperatingSystem getOperatingSystem() {
+        String os = System.getProperty("os.name").toLowerCase();
+        if (os.indexOf("win") >= 0) {
+            return OperatingSystem.WINDOWS;
+        } else if (os.indexOf("apple") >= 0) {
+            return OperatingSystem.MACOS;
+        } else if (os.indexOf("nix") >= 0 || os.indexOf("nux") >= 0) {
+            try {
+                final ProcessBuilder processBuilder = new ProcessBuilder(DETECT_ALPINE_CMDS);
+                final Process        process        = processBuilder.start();
+                final String         result         = new BufferedReader(new InputStreamReader(process.getInputStream())).lines().collect(Collectors.joining("\n"));
+                return null == result ? OperatingSystem.LINUX : result.equals("1") ? OperatingSystem.ALPINE_LINUX : OperatingSystem.LINUX;
+            } catch (IOException e) {
+                e.printStackTrace();
+                return OperatingSystem.LINUX;
+            }
+        } else if (os.indexOf("sunos") >= 0) {
+            return OperatingSystem.SOLARIS;
+        } else {
+            return OperatingSystem.NOT_FOUND;
+        }
+    }
+
+    public static final Architecture getArchitecture() {
+        final String arch = System.getProperty("os.arch").toLowerCase(Locale.ENGLISH);
+        if (arch.contains("sparc")) return Architecture.SPARC;
+        if (arch.contains("amd64") || arch.contains("86_64")) return Architecture.AMD64;
+        if (arch.contains("86")) return Architecture.X86;
+        if (arch.contains("s390x")) return Architecture.S390X;
+        if (arch.contains("ppc64")) return Architecture.PPC64;
+        if (arch.contains("arm") && arch.contains("64")) return Architecture.AARCH64;
+        if (arch.contains("arm")) return Architecture.ARM;
+        if (arch.contains("aarch64")) return Architecture.AARCH64;
+        return Architecture.NOT_FOUND;
     }
 }
