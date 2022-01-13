@@ -59,6 +59,9 @@ public class Demo {
 
 
     public Demo() {
+        System.out.println("Operating System: " + Helper.getOperatingSystem().getUiString());
+        System.out.println("Architecture    : " + Helper.getArchitecture());
+
         propertiesDemo();
 
         tuplesDemo();

@@ -520,7 +520,7 @@ public class Helper {
         String os = System.getProperty("os.name").toLowerCase();
         if (os.indexOf("win") >= 0) {
             return OperatingSystem.WINDOWS;
-        } else if (os.indexOf("apple") >= 0) {
+        } else if (os.indexOf("apple") >= 0 || os.indexOf("mac") >= 0) {
             return OperatingSystem.MACOS;
         } else if (os.indexOf("nix") >= 0 || os.indexOf("nux") >= 0) {
             try {
