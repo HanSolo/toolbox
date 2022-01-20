@@ -35,6 +35,7 @@ repositories {
 }
 
 dependencies {
+    implementation "eu.hansolo:jdktools:17.0.2"
 }
 
 
@@ -123,7 +124,7 @@ publishing {
             }
 
             pom {
-                name = 'EVT'
+                name = 'Toolbox'
                 description = 'Toolbox contains a collection of useful tools incl. events, properties, helper classes etc.'
                 url = "https://github.com/HanSolo/toolbox/wiki"
                 licenses {

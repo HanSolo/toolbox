@@ -18,6 +18,12 @@
 
 package eu.hansolo.toolbox;
 
+import eu.hansolo.jdktools.Architecture;
+import eu.hansolo.jdktools.HashAlgorithm;
+import eu.hansolo.jdktools.OperatingMode;
+import eu.hansolo.jdktools.OperatingSystem;
+import eu.hansolo.toolbox.tuples.Triplet;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -51,7 +57,9 @@ import java.util.Map.Entry;
 import java.util.NavigableMap;
 import java.util.TreeMap;
 import java.util.function.Predicate;
+import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.zip.CRC32;
@@ -65,10 +73,15 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 
 public class Helper {
-    private static final Matcher  INT_MATCHER        = INT_PATTERN.matcher("");
-    private static final Matcher  FLOAT_MATCHER      = FLOAT_PATTERN.matcher("");
-    private static final Matcher  HEX_MATCHER        = HEX_PATTERN.matcher("");
-    private static final String[] DETECT_ALPINE_CMDS = { "/bin/sh", "-c", "cat /etc/os-release | grep 'NAME=' | grep -ic 'Alpine'" };
+    private static final Matcher  INT_MATCHER              = INT_PATTERN.matcher("");
+    private static final Matcher  FLOAT_MATCHER            = FLOAT_PATTERN.matcher("");
+    private static final Matcher  HEX_MATCHER              = HEX_PATTERN.matcher("");
+    private static final String[] DETECT_ALPINE_CMDS       = { "/bin/sh", "-c", "cat /etc/os-release | grep 'NAME=' | grep -ic 'Alpine'" };
+    private static final String[] UX_DETECT_ARCH_CMDS      = { "/bin/sh", "-c", "uname -m" };
+    private static final String[] MAC_DETECT_ROSETTA2_CMDS = { "/bin/sh", "-c", "sysctl -in sysctl.proc_translated" };
+    private static final String[] WIN_DETECT_ARCH_CMDS     = { "cmd.exe", "/c", "SET Processor" };
+    private static final Pattern  ARCHITECTURE_PATTERN     = Pattern.compile("(PROCESSOR_ARCHITECTURE)=([a-zA-Z0-9_\\-]+)");
+    private static final Matcher  ARCHITECTURE_MATCHER     = ARCHITECTURE_PATTERN.matcher("");
 
 
 
@@ -550,5 +563,53 @@ public class Helper {
         if (arch.contains("arm")) return Architecture.ARM;
         if (arch.contains("aarch64")) return Architecture.AARCH64;
         return Architecture.NOT_FOUND;
+    }
+
+    public static final Triplet<OperatingSystem, Architecture, OperatingMode> getOperaringSystemArchitectureOperatingMode() {
+        final OperatingSystem operatingSystem = getOperatingSystem();
+        try {
+            final ProcessBuilder processBuilder = OperatingSystem.WINDOWS == operatingSystem ? new ProcessBuilder(WIN_DETECT_ARCH_CMDS) : new ProcessBuilder(UX_DETECT_ARCH_CMDS);
+            final Process        process        = processBuilder.start();
+            final String         result         = new BufferedReader(new InputStreamReader(process.getInputStream())).lines().collect(Collectors.joining("\n"));
+            switch(operatingSystem) {
+                case WINDOWS -> {
+                    ARCHITECTURE_MATCHER.reset(result);
+                    final List<MatchResult> results     = ARCHITECTURE_MATCHER.results().collect(Collectors.toList());
+                    final int               noOfResults = results.size();
+                    if (noOfResults > 0) {
+                        final MatchResult   res = results.get(0);
+                        return new Triplet<>(operatingSystem, Architecture.fromText(res.group(2)), OperatingMode.NATIVE);
+                    } else {
+                        return new Triplet<>(operatingSystem, Architecture.NOT_FOUND, OperatingMode.NOT_FOUND);
+                    }
+                }
+                case MACOS -> {
+                    Architecture architecture = Architecture.fromText(result);
+                    final ProcessBuilder processBuilder1 = new ProcessBuilder(MAC_DETECT_ROSETTA2_CMDS);
+                    final Process        process1        = processBuilder1.start();
+                    final String         result1         = new BufferedReader(new InputStreamReader(process1.getInputStream())).lines().collect(Collectors.joining("\n"));
+                    System.out.println(result1);
+                    return new Triplet<>(operatingSystem, architecture, result1.equals("1") ? OperatingMode.EMULATED : OperatingMode.NATIVE);
+                }
+                case LINUX -> {
+                    return new Triplet<>(operatingSystem, Architecture.fromText(result), OperatingMode.NATIVE);
+                }
+            }
+
+            // If not found yet try via system property
+            final String arch = System.getProperty("os.arch").toLowerCase(Locale.ENGLISH);
+            if (arch.contains("sparc"))                           { return new Triplet<>(operatingSystem, Architecture.SPARC, OperatingMode.NATIVE); }
+            if (arch.contains("amd64") || arch.contains("86_64")) { return new Triplet<>(operatingSystem, Architecture.AMD64, OperatingMode.NATIVE); }
+            if (arch.contains("86"))                              { return new Triplet<>(operatingSystem, Architecture.X86, OperatingMode.NATIVE); }
+            if (arch.contains("s390x"))                           { return new Triplet<>(operatingSystem, Architecture.S390X, OperatingMode.NATIVE); }
+            if (arch.contains("ppc64"))                           { return new Triplet<>(operatingSystem, Architecture.PPC64, OperatingMode.NATIVE); }
+            if (arch.contains("arm") && arch.contains("64"))      { return new Triplet<>(operatingSystem, Architecture.AARCH64, OperatingMode.NATIVE); }
+            if (arch.contains("arm"))                             { return new Triplet<>(operatingSystem, Architecture.ARM, OperatingMode.NATIVE); }
+            if (arch.contains("aarch64"))                         { return new Triplet<>(operatingSystem, Architecture.AARCH64, OperatingMode.NATIVE); }
+            return new Triplet<>(operatingSystem, Architecture.NOT_FOUND, OperatingMode.NATIVE);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return new Triplet<>(operatingSystem, Architecture.NOT_FOUND, OperatingMode.NATIVE);
+        }
     }
 }
