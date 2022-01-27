@@ -22,6 +22,8 @@ import eu.hansolo.toolbox.evt.EvtPriority;
 import eu.hansolo.toolbox.evt.EvtType;
 import eu.hansolo.toolbox.properties.ReadOnlyProperty;
 
+import java.util.Objects;
+
 
 public class PropertyChangeEvt<T> extends ChangeEvt {
     public static final EvtType<PropertyChangeEvt> ANY     = new EvtType<>(ChangeEvt.ANY, "ANY");
@@ -50,9 +52,21 @@ public class PropertyChangeEvt<T> extends ChangeEvt {
 
 
     // ******************** Methods *******************************************
-    public EvtType<? extends PropertyChangeEvt<T>> getEvtType() { return (EvtType<? extends PropertyChangeEvt<T>>) super.getEvtType(); }
+    @Override public EvtType<? extends PropertyChangeEvt<T>> getEvtType() { return (EvtType<? extends PropertyChangeEvt<T>>) super.getEvtType(); }
 
     public T getOldValue() { return oldValue; }
 
     public T getValue() { return value; }
+
+    @Override public boolean equals(final Object o) {
+        if (this == o) { return true; }
+        if (o == null || getClass() != o.getClass()) { return false; }
+        if (!super.equals(o)) { return false; }
+        PropertyChangeEvt<?> that = (PropertyChangeEvt<?>) o;
+        return Objects.equals(oldValue, that.oldValue) && Objects.equals(value, that.value);
+    }
+
+    @Override public int hashCode() {
+        return Objects.hash(super.hashCode(), oldValue, value);
+    }
 }

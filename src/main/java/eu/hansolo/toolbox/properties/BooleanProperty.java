@@ -32,7 +32,7 @@ public class BooleanProperty extends ReadOnlyBooleanProperty {
         this(null, null, false);
     }
     public BooleanProperty(final boolean value) {
-        this(null, null, Boolean.valueOf(value));
+        this(null, null, value);
     }
     public BooleanProperty(final String name, final boolean value) {
         this(null, name, value);

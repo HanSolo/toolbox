@@ -45,7 +45,7 @@ public class ReadOnlyShortProperty extends ReadOnlyProperty<Short> {
         this.propertyToUpdate = property;
         this.bidirectional    = false;
     }
-    protected void unsetPropertyToUpdate() {
+    @Override protected void unsetPropertyToUpdate() {
         this.propertyToUpdate = null;
         this.bidirectional    = false;
     }

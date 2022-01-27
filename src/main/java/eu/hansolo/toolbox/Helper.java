@@ -73,6 +73,8 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 
 public class Helper {
+    private Helper() {}
+
     private static final Matcher  INT_MATCHER              = INT_PATTERN.matcher("");
     private static final Matcher  FLOAT_MATCHER            = FLOAT_PATTERN.matcher("");
     private static final Matcher  HEX_MATCHER              = HEX_PATTERN.matcher("");
@@ -82,7 +84,6 @@ public class Helper {
     private static final String[] WIN_DETECT_ARCH_CMDS     = { "cmd.exe", "/c", "SET Processor" };
     private static final Pattern  ARCHITECTURE_PATTERN     = Pattern.compile("(PROCESSOR_ARCHITECTURE)=([a-zA-Z0-9_\\-]+)");
     private static final Matcher  ARCHITECTURE_MATCHER     = ARCHITECTURE_PATTERN.matcher("");
-
 
 
     public static final <T extends Number> T clamp(final T min, final T max, final T value) {
@@ -184,18 +185,18 @@ public class Helper {
     }
 
     public static final String normalize(final String text) {
-        String normalized = text.replaceAll("\u00fc", "ue")
-                                .replaceAll("\u00f6", "oe")
-                                .replaceAll("\u00e4", "ae")
-                                .replaceAll("\u00df", "ss");
+        String normalized = text.replace("\u00fc", "ue")
+                                .replace("\u00f6", "oe")
+                                .replace("\u00e4", "ae")
+                                .replace("\u00df", "ss");
 
-        normalized = normalized.replaceAll("\u00dc(?=[a-z\u00fc\u00f6\u00e4\u00df ])", "Ue")
-                               .replaceAll("\u00d6(?=[a-z\u00fc\u00f6\u00e4\u00df ])", "Oe")
-                               .replaceAll("\u00c4(?=[a-z\u00fc\u00f6\u00e4\u00df ])", "Ae");
+        normalized = normalized.replace("\u00dc(?=[a-z\u00fc\u00f6\u00e4\u00df ])", "Ue")
+                               .replace("\u00d6(?=[a-z\u00fc\u00f6\u00e4\u00df ])", "Oe")
+                               .replace("\u00c4(?=[a-z\u00fc\u00f6\u00e4\u00df ])", "Ae");
 
-        normalized = normalized.replaceAll("\u00dc", "UE")
-                               .replaceAll("\u00d6", "OE")
-                               .replaceAll("\u00c4", "AE");
+        normalized = normalized.replace("\u00dc", "UE")
+                               .replace("\u00d6", "OE")
+                               .replace("\u00c4", "AE");
         return normalized;
     }
 
@@ -399,8 +400,7 @@ public class Helper {
             System.out.println("Error getting MD5 algorithm. " + e.getMessage());
             return new byte[]{};
         }
-        final byte[] result = md.digest(bytes);
-        return result;
+        return md.digest(bytes);
     }
     public static final String getMD5ForFile(final File file) throws Exception {
         final MessageDigest md  = MessageDigest.getInstance("MD5");
@@ -433,8 +433,7 @@ public class Helper {
             System.out.println("Error getting SHA-1 algorithm. " + e.getMessage());
             return new byte[]{};
         }
-        final byte[] result = md.digest(bytes);
-        return result;
+        return md.digest(bytes);
     }
     public static final String getSHA1ForFile(final File file) throws Exception {
         final MessageDigest md  = MessageDigest.getInstance("SHA-1");
@@ -467,8 +466,7 @@ public class Helper {
             System.out.println("Error getting SHA2-256 algorithm. " + e.getMessage());
             return new byte[]{};
         }
-        final byte[] result = md.digest(bytes);
-        return result;
+        return md.digest(bytes);
     }
     public static final String getSHA256ForFile(final File file) throws Exception {
         final MessageDigest md  = MessageDigest.getInstance("SHA-256");
@@ -501,8 +499,7 @@ public class Helper {
             System.out.println("Error getting SHA3-256 algorithm. " + e.getMessage());
             return new byte[]{};
         }
-        final byte[] result = md.digest(bytes);
-        return result;
+        return md.digest(bytes);
     }
     public static final String getSHA3_256ForFile(final File file) throws Exception {
         final MessageDigest md  = MessageDigest.getInstance("SHA3-256");

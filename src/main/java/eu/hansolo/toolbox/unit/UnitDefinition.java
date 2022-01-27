@@ -158,7 +158,7 @@ public enum UnitDefinition {
     POUND_FORCE(new Unit(Category.FORCE, "lbf", "Pound-Force", new BigDecimal("4.4482216153"))),
 
     // Humidity
-    PERCENTAGE(new Unit(Category.HUMIDITY, "%", "Percentage", new BigDecimal(1.0))),
+    PERCENTAGE(new Unit(Category.HUMIDITY, "%", "Percentage", BigDecimal.valueOf(1.0))),
 
     // Acceleration
     METER_PER_SQUARE_SECOND(new Unit(Category.ACCELERATION, "m/s\u00b2", "Meter per squaresecond", new BigDecimal("1.0E0"))),

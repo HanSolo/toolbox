@@ -153,7 +153,7 @@ public class Converter {
     }
 
     public final List<Unit> getAvailableUnits(final Category category) {
-        return getAllUnitDefinitions().get(category).stream().map(unitDefinition -> unitDefinition.UNIT).collect(Collectors.toList());
+        return getAllUnitDefinitions().get(category).stream().map(unitDefinition -> unitDefinition.UNIT).toList();
     }
 
     public final EnumMap<Category, ArrayList<UnitDefinition>> getAllUnitDefinitions() {
@@ -185,7 +185,7 @@ public class Converter {
         String formatString = new StringBuilder("%.").append(Helper.clamp(0, 12, decimals)).append("f").toString();
         double value;
         for(int i = ABBREVIATIONS.length - 1 ; i >= 0; i--) {
-            value = Math.pow(1000, i+1);
+            value = Math.pow(1000, i + 1.0);
             if (Double.compare(number, -value) <= 0 || Double.compare(number, value) >= 0) {
                 return String.format(locale, formatString, (number / value)) + ABBREVIATIONS[i];
             }

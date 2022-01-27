@@ -45,7 +45,7 @@ public class ReadOnlyObjectProperty<T> extends ReadOnlyProperty<T> {
         this.propertyToUpdate = property;
         this.bidirectional    = false;
     }
-    protected void unsetPropertyToUpdate() {
+    @Override protected void unsetPropertyToUpdate() {
         this.propertyToUpdate = null;
         this.bidirectional    = false;
     }

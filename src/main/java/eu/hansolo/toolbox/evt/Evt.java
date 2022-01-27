@@ -49,7 +49,7 @@ public class Evt extends EventObject implements Comparable<Evt> {
 
 
     // ******************** Methods *******************************************
-    public Object getSource() { return source; }
+    @Override public Object getSource() { return source; }
 
     public EvtType<? extends Evt> getEvtType() {  return evtType; }
 

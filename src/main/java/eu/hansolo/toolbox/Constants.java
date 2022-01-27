@@ -24,6 +24,8 @@ import java.util.regex.Pattern;
 
 
 public class Constants {
+    private Constants() {}
+
     public static final double             EPSILON                  = 1E-6;
     public static final Pattern            INT_PATTERN              = Pattern.compile("[0-9]+");
     public static final Pattern            FLOAT_PATTERN            = Pattern.compile("[-+]?[0-9]*\\.?[0-9]+");
