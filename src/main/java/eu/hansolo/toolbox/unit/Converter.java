@@ -153,7 +153,7 @@ public class Converter {
     }
 
     public final List<Unit> getAvailableUnits(final Category category) {
-        return getAllUnitDefinitions().get(category).stream().map(unitDefinition -> unitDefinition.UNIT).toList();
+        return getAllUnitDefinitions().get(category).stream().map(unitDefinition -> unitDefinition.UNIT).collect(Collectors.toList());
     }
 
     public final EnumMap<Category, ArrayList<UnitDefinition>> getAllUnitDefinitions() {

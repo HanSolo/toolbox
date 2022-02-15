@@ -61,22 +61,22 @@ public class Quartet<A,B,C,D> implements Tuple {
     @Override public Object getValueAt(final int i) {
         if (0 > i && i >= size()) { throw new IllegalArgumentException("Index out of bounds, " + getClass().getSimpleName() + " has " + size() + " elements"); }
         switch(i) {
-            case 0  -> { return this.a; }
-            case 1  -> { return this.b; }
-            case 2  -> { return this.c; }
-            case 3  -> { return this.d; }
-            default -> { return null; }
+            case 0 : { return this.a; }
+            case 1 : { return this.b; }
+            case 2 : { return this.c; }
+            case 3 : { return this.d; }
+            default: { return null; }
         }
     }
 
     @Override public Class getTypeAt(final int i) {
         if (0 > i && i >= size()) { throw new IllegalArgumentException("Index out of bounds, " + getClass().getSimpleName() + " has " + size() + " elements"); }
         switch(i) {
-            case 0  -> { return this.a.getClass(); }
-            case 1  -> { return this.b.getClass(); }
-            case 2  -> { return this.c.getClass(); }
-            case 3  -> { return this.d.getClass(); }
-            default -> { return null; }
+            case 0 : { return this.a.getClass(); }
+            case 1 : { return this.b.getClass(); }
+            case 2 : { return this.c.getClass(); }
+            case 3 : { return this.d.getClass(); }
+            default: { return null; }
         }
     }
 

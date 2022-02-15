@@ -66,24 +66,24 @@ public class Quintet<A,B,C,D,E> implements Tuple {
     @Override public Object getValueAt(final int i) {
         if (0 > i && i >= size()) { throw new IllegalArgumentException("Index out of bounds, " + getClass().getSimpleName() + " has " + size() + " elements"); }
         switch(i) {
-            case 0  -> { return this.a; }
-            case 1  -> { return this.b; }
-            case 2  -> { return this.c; }
-            case 3  -> { return this.d; }
-            case 4  -> { return this.e; }
-            default -> { return null; }
+            case 0 : { return this.a; }
+            case 1 : { return this.b; }
+            case 2 : { return this.c; }
+            case 3 : { return this.d; }
+            case 4 : { return this.e; }
+            default: { return null; }
         }
     }
 
     @Override public Class getTypeAt(final int i) {
         if (0 > i && i >= size()) { throw new IllegalArgumentException("Index out of bounds, " + getClass().getSimpleName() + " has " + size() + " elements"); }
         switch(i) {
-            case 0  -> { return this.a.getClass(); }
-            case 1  -> { return this.b.getClass(); }
-            case 2  -> { return this.c.getClass(); }
-            case 3  -> { return this.d.getClass(); }
-            case 4  -> { return this.e.getClass(); }
-            default -> { return null; }
+            case 0 : { return this.a.getClass(); }
+            case 1 : { return this.b.getClass(); }
+            case 2 : { return this.c.getClass(); }
+            case 3 : { return this.d.getClass(); }
+            case 4 : { return this.e.getClass(); }
+            default: { return null; }
         }
     }
 

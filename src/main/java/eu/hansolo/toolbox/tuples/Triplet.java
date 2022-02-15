@@ -56,20 +56,20 @@ public class Triplet<A,B,C> implements Tuple {
     @Override public Object getValueAt(final int i) {
         if (0 > i && i >= size()) { throw new IllegalArgumentException("Index out of bounds, " + getClass().getSimpleName() + " has " + size() + " elements"); }
         switch(i) {
-            case 0  -> { return a;    }
-            case 1  -> { return b;    }
-            case 2  -> { return c;    }
-            default -> { return null; }
+            case 0 : { return a;    }
+            case 1 : { return b;    }
+            case 2 : { return c;    }
+            default: { return null; }
         }
     }
 
     @Override public Class getTypeAt(final int i) {
         if (0 > i && i >= size()) { throw new IllegalArgumentException("Index out of bounds, " + getClass().getSimpleName() + " has " + size() + " elements"); }
         switch(i) {
-            case 0  -> { return a.getClass(); }
-            case 1  -> { return b.getClass(); }
-            case 2  -> { return c.getClass(); }
-            default -> { return null; }
+            case 0 : { return a.getClass(); }
+            case 1 : { return b.getClass(); }
+            case 2 : { return c.getClass(); }
+            default: { return null; }
         }
     }
 

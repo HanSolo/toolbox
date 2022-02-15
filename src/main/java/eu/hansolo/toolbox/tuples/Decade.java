@@ -91,34 +91,34 @@ public class Decade<A,B,C,D,E,F,G,H,I,J> implements Tuple {
     @Override public Object getValueAt(final int i) {
         if (0 > i && i >= size()) { throw new IllegalArgumentException("Index out of bounds, " + getClass().getSimpleName() + " has " + size() + " elements"); }
         switch(i) {
-            case 0  -> { return this.a; }
-            case 1  -> { return this.b; }
-            case 2  -> { return this.c; }
-            case 3  -> { return this.d; }
-            case 4  -> { return this.e; }
-            case 5  -> { return this.f; }
-            case 6  -> { return this.g; }
-            case 7  -> { return this.h; }
-            case 8  -> { return this.i; }
-            case 9  -> { return this.j; }
-            default -> { return null; }
+            case 0 : { return this.a; }
+            case 1 : { return this.b; }
+            case 2 : { return this.c; }
+            case 3 : { return this.d; }
+            case 4 : { return this.e; }
+            case 5 : { return this.f; }
+            case 6 : { return this.g; }
+            case 7 : { return this.h; }
+            case 8 : { return this.i; }
+            case 9 : { return this.j; }
+            default: { return null; }
         }
     }
 
     @Override public Class getTypeAt(final int i) {
         if (0 > i && i >= size()) { throw new IllegalArgumentException("Index out of bounds, " + getClass().getSimpleName() + " has " + size() + " elements"); }
         switch(i) {
-            case 0  -> { return this.a.getClass(); }
-            case 1  -> { return this.b.getClass(); }
-            case 2  -> { return this.c.getClass(); }
-            case 3  -> { return this.d.getClass(); }
-            case 4  -> { return this.e.getClass(); }
-            case 5  -> { return this.f.getClass(); }
-            case 6  -> { return this.g.getClass(); }
-            case 7  -> { return this.h.getClass(); }
-            case 8  -> { return this.i.getClass(); }
-            case 9  -> { return this.j.getClass(); }
-            default -> { return null; }
+            case 0 : { return this.a.getClass(); }
+            case 1 : { return this.b.getClass(); }
+            case 2 : { return this.c.getClass(); }
+            case 3 : { return this.d.getClass(); }
+            case 4 : { return this.e.getClass(); }
+            case 5 : { return this.f.getClass(); }
+            case 6 : { return this.g.getClass(); }
+            case 7 : { return this.h.getClass(); }
+            case 8 : { return this.i.getClass(); }
+            case 9 : { return this.j.getClass(); }
+            default: { return null; }
         }
     }
 

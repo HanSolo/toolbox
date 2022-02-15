@@ -569,7 +569,7 @@ public class Helper {
             final Process        process        = processBuilder.start();
             final String         result         = new BufferedReader(new InputStreamReader(process.getInputStream())).lines().collect(Collectors.joining("\n"));
             switch(operatingSystem) {
-                case WINDOWS -> {
+                case WINDOWS :
                     ARCHITECTURE_MATCHER.reset(result);
                     final List<MatchResult> results     = ARCHITECTURE_MATCHER.results().collect(Collectors.toList());
                     final int               noOfResults = results.size();
@@ -579,18 +579,15 @@ public class Helper {
                     } else {
                         return new Triplet<>(operatingSystem, Architecture.NOT_FOUND, OperatingMode.NOT_FOUND);
                     }
-                }
-                case MACOS -> {
+                case MACOS :
                     Architecture architecture = Architecture.fromText(result);
                     final ProcessBuilder processBuilder1 = new ProcessBuilder(MAC_DETECT_ROSETTA2_CMDS);
                     final Process        process1        = processBuilder1.start();
                     final String         result1         = new BufferedReader(new InputStreamReader(process1.getInputStream())).lines().collect(Collectors.joining("\n"));
                     System.out.println(result1);
                     return new Triplet<>(operatingSystem, architecture, result1.equals("1") ? OperatingMode.EMULATED : OperatingMode.NATIVE);
-                }
-                case LINUX -> {
+                case LINUX :
                     return new Triplet<>(operatingSystem, Architecture.fromText(result), OperatingMode.NATIVE);
-                }
             }
 
             // If not found yet try via system property
