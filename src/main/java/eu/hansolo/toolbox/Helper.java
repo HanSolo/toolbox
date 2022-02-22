@@ -585,7 +585,6 @@ public class Helper {
                     final ProcessBuilder processBuilder1 = new ProcessBuilder(MAC_DETECT_ROSETTA2_CMDS);
                     final Process        process1        = processBuilder1.start();
                     final String         result1         = new BufferedReader(new InputStreamReader(process1.getInputStream())).lines().collect(Collectors.joining("\n"));
-                    System.out.println(result1);
                     return new Triplet<>(operatingSystem, architecture, result1.equals("1") ? OperatingMode.EMULATED : OperatingMode.NATIVE);
                 }
                 case LINUX -> {
