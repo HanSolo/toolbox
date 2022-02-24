@@ -2,8 +2,6 @@ module eu.hansolo.toolbox {
 
     requires java.base;
 
-    requires eu.hansolo.jdktools;
-
     exports eu.hansolo.toolbox.evt.type;
     exports eu.hansolo.toolbox.evt;
     exports eu.hansolo.toolbox.properties;

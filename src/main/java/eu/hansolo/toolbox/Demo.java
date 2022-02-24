@@ -18,10 +18,6 @@
 
 package eu.hansolo.toolbox;
 
-
-import eu.hansolo.jdktools.Architecture;
-import eu.hansolo.jdktools.OperatingMode;
-import eu.hansolo.jdktools.OperatingSystem;
 import eu.hansolo.toolbox.evt.EvtObserver;
 import eu.hansolo.toolbox.evt.type.PropertyChangeEvt;
 import eu.hansolo.toolbox.properties.BooleanProperty;
@@ -62,13 +58,6 @@ public class Demo {
 
 
     public Demo() {
-        Triplet<OperatingSystem, Architecture, OperatingMode> sysinfo = Helper.getOperaringSystemArchitectureOperatingMode();
-        System.out.println("Operating System: " + sysinfo.getA().getUiString());
-        System.out.println("Architecture    : " + sysinfo.getB().getUiString());
-        System.out.println("OperatingMode   : " + sysinfo.getC().getUiString());
-
-        System.out.println();
-
         propertiesDemo();
 
         tuplesDemo();
