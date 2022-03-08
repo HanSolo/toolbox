@@ -19,6 +19,8 @@
 package eu.hansolo.toolbox;
 
 import eu.hansolo.toolbox.evt.EvtObserver;
+import eu.hansolo.toolbox.evt.EvtType;
+import eu.hansolo.toolbox.evt.type.ListChangeEvt;
 import eu.hansolo.toolbox.evt.type.PropertyChangeEvt;
 import eu.hansolo.toolbox.properties.BooleanProperty;
 import eu.hansolo.toolbox.properties.DoubleProperty;
@@ -31,6 +33,13 @@ import eu.hansolo.toolbox.tuples.Quartet;
 import eu.hansolo.toolbox.tuples.Triplet;
 import eu.hansolo.toolbox.unit.Converter;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import static eu.hansolo.toolbox.evt.type.ListChangeEvt.ADDED;
+import static eu.hansolo.toolbox.evt.type.ListChangeEvt.CHANGED;
+import static eu.hansolo.toolbox.evt.type.ListChangeEvt.REMOVED;
 import static eu.hansolo.toolbox.unit.Category.BLOOD_GLUCOSE;
 import static eu.hansolo.toolbox.unit.Category.LENGTH;
 import static eu.hansolo.toolbox.unit.Category.TEMPERATURE;
@@ -63,9 +72,12 @@ public class Demo {
         tuplesDemo();
 
         converterDemo();
+
+        observableListDemo();
     }
 
     private void propertiesDemo() {
+        System.out.println("-------------------- properties demo --------------------");
         pojo = new PoJo();
         pojo.valueProperty().addObserver(evt -> System.out.println("Value changed from " + evt.getOldValue() + " to " + evt.getValue()));
 
@@ -205,6 +217,7 @@ public class Demo {
     }
 
     private void tuplesDemo() {
+        System.out.println("-------------------- tuples demo --------------------");
         Pair<Double, Integer> pair = new Pair(5.0, 3);
         Triplet<Double, Integer, Long> triplet = new Triplet(5.0, 3, 500);
         Quartet<Double, Integer, String, Long> quartet = new Quartet(1.0, 5, "Test", 1000);
@@ -214,6 +227,7 @@ public class Demo {
     }
 
     private void converterDemo() {
+        System.out.println("-------------------- converter demo --------------------");
         Converter temperatureConverter = new Converter(TEMPERATURE, CELSIUS); // Type Temperature with BaseUnit Celsius
         double    celsius              = 32.0;
         double    fahrenheit           = temperatureConverter.convert(celsius, FAHRENHEIT);
@@ -261,6 +275,42 @@ public class Demo {
         System.out.println(Converter.format(1_500_000, 1));
 
         System.out.println(Converter.format(1_000_000, 0));
+    }
+
+    private void observableListDemo() {
+        System.out.println("-------------------- observable list demo --------------------");
+        ObservableList<String> observableList = new ObservableList<>();
+        observableList.addListChangeObserver(ListChangeEvt.ANY, e -> {
+            EvtType<ListChangeEvt<String>> type = e.getEvtType();
+            if (CHANGED.equals(type)) {
+                System.out.println("List changed");
+            } else if (ADDED.equals(type)) {
+                e.getAddedItems().forEach(item -> System.out.println("Added: " + item));
+            } else if (REMOVED.equals(type)) {
+                e.getRemovedItems().forEach(item -> System.out.println("Removed: " + item));
+            }
+        });
+        System.out.println("---------- adding ----------");
+        observableList.add("Gerrit");
+        observableList.add("Sandra");
+        observableList.add("Lilli");
+        observableList.add("Anton");
+        observableList.add("Neo");
+        System.out.println("---------- remove 1 ----------");
+        observableList.remove("Neo");
+        System.out.println("---------- add list of 3 ----------");
+        observableList.addAll(List.of("Test", "Test2", "Test3"));
+        System.out.println("---------- remove 1 ----------");
+        observableList.remove("Test2");
+        System.out.println("---------- add 1 ----------");
+        observableList.add(2, "Neo");
+        System.out.println("---------- print all ----------");
+        observableList.forEach(item -> System.out.println(item));
+        System.out.println("---------- retain all (Gerrit, Sandra, Lilli, Anton, Neo) ----------");
+        List<String> keep = List.of("Gerrit", "Sandra", "Lilli", "Anton", "Neo");
+        observableList.retainAll(keep);
+        System.out.println("---------- clear ----------");
+        observableList.clear();
     }
 
 
