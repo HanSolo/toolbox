@@ -21,6 +21,7 @@ package eu.hansolo.toolbox;
 import eu.hansolo.toolbox.evt.EvtObserver;
 import eu.hansolo.toolbox.evt.EvtType;
 import eu.hansolo.toolbox.evt.type.ListChangeEvt;
+import eu.hansolo.toolbox.evt.type.MapChangeEvt;
 import eu.hansolo.toolbox.evt.type.PropertyChangeEvt;
 import eu.hansolo.toolbox.properties.BooleanProperty;
 import eu.hansolo.toolbox.properties.DoubleProperty;
@@ -33,13 +34,9 @@ import eu.hansolo.toolbox.tuples.Quartet;
 import eu.hansolo.toolbox.tuples.Triplet;
 import eu.hansolo.toolbox.unit.Converter;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
-import static eu.hansolo.toolbox.evt.type.ListChangeEvt.ADDED;
-import static eu.hansolo.toolbox.evt.type.ListChangeEvt.CHANGED;
-import static eu.hansolo.toolbox.evt.type.ListChangeEvt.REMOVED;
 import static eu.hansolo.toolbox.unit.Category.BLOOD_GLUCOSE;
 import static eu.hansolo.toolbox.unit.Category.LENGTH;
 import static eu.hansolo.toolbox.unit.Category.TEMPERATURE;
@@ -74,6 +71,8 @@ public class Demo {
         converterDemo();
 
         observableListDemo();
+
+        observableMapDemo();
     }
 
     private void propertiesDemo() {
@@ -281,12 +280,12 @@ public class Demo {
         System.out.println("-------------------- observable list demo --------------------");
         ObservableList<String> observableList = new ObservableList<>();
         observableList.addListChangeObserver(ListChangeEvt.ANY, e -> {
-            EvtType<ListChangeEvt<String>> type = e.getEvtType();
-            if (CHANGED.equals(type)) {
+            EvtType<? extends ListChangeEvt<String>> type = e.getEvtType();
+            if (ListChangeEvt.CHANGED.equals(type)) {
                 System.out.println("List changed");
-            } else if (ADDED.equals(type)) {
+            } else if (ListChangeEvt.ADDED.equals(type)) {
                 e.getAddedItems().forEach(item -> System.out.println("Added: " + item));
-            } else if (REMOVED.equals(type)) {
+            } else if (ListChangeEvt.REMOVED.equals(type)) {
                 e.getRemovedItems().forEach(item -> System.out.println("Removed: " + item));
             }
         });
@@ -311,6 +310,39 @@ public class Demo {
         observableList.retainAll(keep);
         System.out.println("---------- clear ----------");
         observableList.clear();
+    }
+
+    private void observableMapDemo() {
+        System.out.println("-------------------- observable map demo --------------------");
+        ObservableMap<String, Integer> observableMap = new ObservableMap<>();
+        observableMap.addMapChangeObserver(MapChangeEvt.ANY, e -> {
+            EvtType<? extends MapChangeEvt<String, Integer>> type = e.getEvtType();
+            if (MapChangeEvt.MODIFIED.equals(type)) {
+                e.getModifiedEntries().forEach(entry -> System.out.println("Modified: " + entry.getKey() + " -> " + entry.getValue()));
+            } else if (MapChangeEvt.ADDED.equals(type)) {
+                e.getAddedEntries().forEach(entry -> System.out.println("Added   : " + entry.getKey() + " -> " + entry.getValue()));
+            } else if (MapChangeEvt.REMOVED.equals(type)) {
+                e.getRemovedEntries().forEach(entry -> System.out.println("Removed : " + entry.getKey() + " -> " + entry.getValue()));
+            }
+        });
+        // Add single entries
+        observableMap.put("Gerrit", 52);
+        observableMap.put("Sandra", 50);
+        observableMap.put("Lilli", 18);
+        observableMap.put("Anton", 13);
+        observableMap.put("Neo", 3);
+        System.out.println("---------- remove 1 ----------");
+        observableMap.remove("Neo");
+        System.out.println("---------- add map of 3 ----------");
+        observableMap.putAll(Map.of("Test", 1, "Test2", 2, "Test3", 3));
+        System.out.println("---------- remove 1 ----------");
+        observableMap.remove("Test2");
+        System.out.println("---------- add 1 ----------");
+        observableMap.put("Neo", 3);
+        System.out.println("---------- print all ----------");
+        observableMap.entrySet().forEach(entry -> System.out.println(entry.getKey() + " -> " + entry.getValue()));
+        System.out.println("---------- clear ----------");
+        observableMap.clear();
     }
 
 

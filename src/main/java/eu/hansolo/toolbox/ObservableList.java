@@ -18,7 +18,6 @@
 
 package eu.hansolo.toolbox;
 
-
 import eu.hansolo.toolbox.evt.EvtObserver;
 import eu.hansolo.toolbox.evt.EvtType;
 import eu.hansolo.toolbox.evt.type.ListChangeEvt;
@@ -42,9 +41,9 @@ import java.util.stream.Collectors;
 
 
 public class ObservableList<T> extends ArrayList<T> implements List<T>, RandomAccess, Cloneable {
-    private static final int                                            DEFAULT_CAPACITY = 16;
-    private        final ArrayList<T>                                   list;
-    private              Map<EvtType, List<EvtObserver<ListChangeEvt>>> observers;
+    private static final int                                               DEFAULT_CAPACITY = 16;
+    private        final ArrayList<T>                                      list;
+    private              Map<EvtType, List<EvtObserver<ListChangeEvt<T>>>> observers;
 
 
     // ******************** Constructors **************************************
@@ -67,14 +66,14 @@ public class ObservableList<T> extends ArrayList<T> implements List<T>, RandomAc
     public T set(final int index, final T element) {
         final List<T> removedItems = List.of(list.get(index));
         final List<T> addedItems   = List.of(list.set(index, element));
-        fireListChangeEvt(new ListChangeEvt(ObservableList.this, ListChangeEvt.CHANGED, addedItems, removedItems));
+        fireListChangeEvt(new ListChangeEvt<>(ObservableList.this, ListChangeEvt.CHANGED, addedItems, removedItems));
         return addedItems.get(0);
     }
 
 
     public boolean add(final T element) {
         final boolean result = list.add(element);
-        fireListChangeEvt(new ListChangeEvt(ObservableList.this, ListChangeEvt.ADDED, result ? List.of(element) : List.of(), List.of()));
+        fireListChangeEvt(new ListChangeEvt<>(ObservableList.this, ListChangeEvt.ADDED, result ? List.of(element) : List.of(), List.of()));
         return result;
     }
 
@@ -85,7 +84,7 @@ public class ObservableList<T> extends ArrayList<T> implements List<T>, RandomAc
 
     public boolean addAll(final Collection<? extends T> collection) {
         final boolean result = list.addAll(collection);
-        fireListChangeEvt(new ListChangeEvt<T>(ObservableList.this, ListChangeEvt.ADDED, result ? new ArrayList<>(collection) : List.of(), List.of()));
+        fireListChangeEvt(new ListChangeEvt<>(ObservableList.this, ListChangeEvt.ADDED, result ? new ArrayList<>(collection) : List.of(), List.of()));
         return result;
     }
 
@@ -106,13 +105,13 @@ public class ObservableList<T> extends ArrayList<T> implements List<T>, RandomAc
         final boolean result = list.remove(obj);
         final List<T> removedItems = new ArrayList<>();
         if (result) { removedItems.add((T) obj); }
-        fireListChangeEvt(new ListChangeEvt<T>(ObservableList.this, ListChangeEvt.REMOVED, List.of(), removedItems));
+        fireListChangeEvt(new ListChangeEvt<>(ObservableList.this, ListChangeEvt.REMOVED, List.of(), removedItems));
         return result;
     }
 
     public boolean removeAll(final Collection<?> collection) {
         final boolean result = list.removeAll(collection);
-        fireListChangeEvt(new ListChangeEvt<T>(ObservableList.this, ListChangeEvt.REMOVED, List.of(), result ? new ArrayList<>((Collection<? extends T>) collection) : List.of()));
+        fireListChangeEvt(new ListChangeEvt<>(ObservableList.this, ListChangeEvt.REMOVED, List.of(), result ? new ArrayList<>((Collection<? extends T>) collection) : List.of()));
         return result;
     }
 
@@ -199,12 +198,12 @@ public class ObservableList<T> extends ArrayList<T> implements List<T>, RandomAc
 
 
     // ******************** Event Handling ************************************
-    public void addListChangeObserver(final EvtType type, final EvtObserver<ListChangeEvt> observer) {
+    public void addListChangeObserver(final EvtType type, final EvtObserver<ListChangeEvt<T>> observer) {
         if (!observers.containsKey(type)) { observers.put(type, new CopyOnWriteArrayList<>()); }
         if (observers.get(type).contains(observer)) { return; }
         observers.get(type).add(observer);
     }
-    public void removeListChangeObserver(final EvtType type, final EvtObserver<ListChangeEvt> observer) {
+    public void removeListChangeObserver(final EvtType type, final EvtObserver<ListChangeEvt<T>> observer) {
         if (observers.containsKey(type)) {
             if (observers.get(type).contains(observer)) {
                 observers.get(type).remove(observer);
@@ -213,7 +212,7 @@ public class ObservableList<T> extends ArrayList<T> implements List<T>, RandomAc
     }
     public void removeAllListChangeObservers() { observers.clear(); }
 
-    public void fireListChangeEvt(final ListChangeEvt evt) {
+    public void fireListChangeEvt(final ListChangeEvt<T> evt) {
         final EvtType type = evt.getEvtType();
         observers.entrySet().stream().filter(entry -> entry.getKey().equals(ListChangeEvt.ANY)).forEach(entry -> entry.getValue().forEach(observer -> observer.handle(evt)));
         if (observers.containsKey(type) && !type.equals(ListChangeEvt.ANY)) {
