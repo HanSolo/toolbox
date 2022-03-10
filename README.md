@@ -10,6 +10,7 @@ Toolbox contains different useful classes and methods e.g.
 - Statistics class containing methods like average, median etc.
 - A simple ObservableList that wraps an ArrayList
 - A simple ObservableMap that wraps a HashMap
+- A simple ObservableMatrix that wraps an Array
 
 
 Toolbox will be used in projects like TilesFX, Medusa, Countries, Charts etc.
