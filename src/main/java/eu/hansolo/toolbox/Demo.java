@@ -291,9 +291,9 @@ public class Demo {
             if (ListChangeEvt.CHANGED.equals(type)) {
                 System.out.println("List changed");
             } else if (ListChangeEvt.ADDED.equals(type)) {
-                e.getAddedItems().forEach(item -> System.out.println("Added: " + item));
+                e.getAddedElements().forEach(item -> System.out.println("Added: " + item));
             } else if (ListChangeEvt.REMOVED.equals(type)) {
-                e.getRemovedItems().forEach(item -> System.out.println("Removed: " + item));
+                e.getRemovedElements().forEach(item -> System.out.println("Removed: " + item));
             }
         });
         System.out.println("---------- adding ----------");

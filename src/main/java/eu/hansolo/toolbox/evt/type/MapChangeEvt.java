@@ -24,6 +24,7 @@ import eu.hansolo.toolbox.evt.EvtType;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 
@@ -40,13 +41,13 @@ public class MapChangeEvt<K,V> extends ChangeEvt {
 
 
     // ******************** Constructors **************************************
-    public MapChangeEvt(final ObservableMap<K,V> src, final EvtType<MapChangeEvt> evtType, final List<Entry<K,V>> addedEntries, final List<Entry<K,V>> modifiedEntries, final List<Entry<K,V>> removedEntries) {
+    public MapChangeEvt(final Map<K,V> src, final EvtType<MapChangeEvt> evtType, final List<Entry<K,V>> addedEntries, final List<Entry<K,V>> modifiedEntries, final List<Entry<K,V>> removedEntries) {
         super(src, evtType);
         this.addedEntries    = null == addedEntries    ? List.of() : new ArrayList<>(addedEntries);
         this.modifiedEntries = null == modifiedEntries ? List.of() : new ArrayList<>(modifiedEntries);
         this.removedEntries  = null == removedEntries  ? List.of() : new ArrayList<>(removedEntries);
     }
-    public MapChangeEvt(final ObservableMap<K,V> src, final EvtType<? extends MapChangeEvt<K,V>> evtType, final EvtPriority priority, final List<Entry<K,V>> addedEntries, final List<Entry<K,V>> modifiedEntries, final List<Entry<K,V>> removedEntries) {
+    public MapChangeEvt(final Map<K,V> src, final EvtType<? extends MapChangeEvt<K,V>> evtType, final EvtPriority priority, final List<Entry<K,V>> addedEntries, final List<Entry<K,V>> modifiedEntries, final List<Entry<K,V>> removedEntries) {
         super(src, evtType, priority);
         this.addedEntries    = null == addedEntries    ? List.of() : new ArrayList<>(addedEntries);
         this.modifiedEntries = null == modifiedEntries ? List.of() : new ArrayList<>(modifiedEntries);
