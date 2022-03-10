@@ -18,7 +18,7 @@
 
 package eu.hansolo.toolbox.evt.type;
 
-import eu.hansolo.toolbox.ObservableMap;
+import eu.hansolo.toolbox.observables.ObservableMap;
 import eu.hansolo.toolbox.evt.EvtPriority;
 import eu.hansolo.toolbox.evt.EvtType;
 

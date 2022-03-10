@@ -16,14 +16,12 @@
  * limitations under the License.
  */
 
-package eu.hansolo.toolbox;
+package eu.hansolo.toolbox.observables;
 
 import eu.hansolo.toolbox.evt.EvtObserver;
 import eu.hansolo.toolbox.evt.EvtType;
-import eu.hansolo.toolbox.evt.type.ListChangeEvt;
 import eu.hansolo.toolbox.evt.type.MapChangeEvt;
 
-import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;

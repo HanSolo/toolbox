@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package eu.hansolo.toolbox;
+package eu.hansolo.toolbox.observables;
 
 import eu.hansolo.toolbox.evt.EvtObserver;
 import eu.hansolo.toolbox.evt.EvtType;

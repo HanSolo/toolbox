@@ -22,7 +22,11 @@ import eu.hansolo.toolbox.evt.EvtObserver;
 import eu.hansolo.toolbox.evt.EvtType;
 import eu.hansolo.toolbox.evt.type.ListChangeEvt;
 import eu.hansolo.toolbox.evt.type.MapChangeEvt;
+import eu.hansolo.toolbox.evt.type.MatrixItemChangeEvt;
 import eu.hansolo.toolbox.evt.type.PropertyChangeEvt;
+import eu.hansolo.toolbox.observables.ObservableList;
+import eu.hansolo.toolbox.observables.ObservableMap;
+import eu.hansolo.toolbox.observables.ObservableMatrix;
 import eu.hansolo.toolbox.properties.BooleanProperty;
 import eu.hansolo.toolbox.properties.DoubleProperty;
 import eu.hansolo.toolbox.properties.IntegerProperty;
@@ -36,6 +40,7 @@ import eu.hansolo.toolbox.unit.Converter;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 import static eu.hansolo.toolbox.unit.Category.BLOOD_GLUCOSE;
 import static eu.hansolo.toolbox.unit.Category.LENGTH;
@@ -73,6 +78,8 @@ public class Demo {
         observableListDemo();
 
         observableMapDemo();
+
+        observableMatrixDemo();
     }
 
     private void propertiesDemo() {
@@ -343,6 +350,33 @@ public class Demo {
         observableMap.entrySet().forEach(entry -> System.out.println(entry.getKey() + " -> " + entry.getValue()));
         System.out.println("---------- clear ----------");
         observableMap.clear();
+    }
+
+    private void observableMatrixDemo() {
+        System.out.println("-------------------- observable matrix demo --------------------");
+        final Random rnd  = new Random();
+        final int    cols = 3;
+        final int    rows = 2;
+        ObservableMatrix<Integer> integerMatrix = new ObservableMatrix<>(Integer.class, cols, rows);
+        integerMatrix.addMatrixItemChangeObserver(MatrixItemChangeEvt.ANY, e -> {
+            EvtType<? extends MatrixItemChangeEvt<Integer>> type = e.getEvtType();
+            if (MatrixItemChangeEvt.ITEM_ADDED.equals(type)) {
+                System.out.println("Item added  : " + e.getItem() + " at " + e.getX() + ", " + e.getY());
+            } else if (MatrixItemChangeEvt.ITEM_REMOVED.equals(type)) {
+                System.out.println("Item removed: " + e.getOldItem() + " at " + e.getX() + ", " + e.getY());
+            } else if (MatrixItemChangeEvt.ITEM_CHANGED.equals(type)) {
+                System.out.println("Item changed: " + e.getItem() + " at " + e.getX() + ", " + e.getY());
+            }
+        });
+
+        for (int y = 0; y < rows; y++) {
+            for (int x = 0; x < cols; x++) {
+                Integer value = rnd.nextInt(10);
+                integerMatrix.setItemAt(x, y, value);
+            }
+        }
+        integerMatrix.removeItemAt(0, 0);
+        integerMatrix.setItemAt(2, 0, 5);
     }
 
 
