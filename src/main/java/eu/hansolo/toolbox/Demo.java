@@ -33,11 +33,17 @@ import eu.hansolo.toolbox.properties.IntegerProperty;
 import eu.hansolo.toolbox.properties.ObjectProperty;
 import eu.hansolo.toolbox.properties.ReadOnlyBooleanProperty;
 import eu.hansolo.toolbox.properties.ReadOnlyDoubleProperty;
+import eu.hansolo.toolbox.time.DateTimes;
+import eu.hansolo.toolbox.time.Dates;
+import eu.hansolo.toolbox.time.Times;
 import eu.hansolo.toolbox.tuples.Pair;
 import eu.hansolo.toolbox.tuples.Quartet;
 import eu.hansolo.toolbox.tuples.Triplet;
 import eu.hansolo.toolbox.unit.Converter;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -80,6 +86,12 @@ public class Demo {
         observableMapDemo();
 
         observableMatrixDemo();
+
+        datesDemo();
+
+        timesDemo();
+
+        dateTimesDemo();
     }
 
     private void propertiesDemo() {
@@ -379,6 +391,31 @@ public class Demo {
         integerMatrix.setItemAt(2, 0, 5);
     }
 
+    private void datesDemo() {
+        System.out.println("-------------------- dates demo --------------------");
+        LocalDate localDate = LocalDate.of(2022, 12, 03);
+        System.out.println(Dates.dd_MM_yyyy.format(localDate));
+        System.out.println(Dates.dd_MMMM_yyyy.format(localDate));
+        System.out.println(Dates.yyyy_w.format(localDate));
+        System.out.println(Dates.yyyy_w_e.format(localDate));
+        System.out.println(Dates.yyyywe.format(localDate));
+    }
+
+    private void timesDemo() {
+        System.out.println("-------------------- times demo --------------------");
+        LocalTime localTime = LocalTime.now();
+        System.out.println(Times.HH_mm_ss_SSSS.format(localTime));
+        System.out.println(Times.HH_mm.format(localTime));
+        System.out.println(Times.HHmmss.format(localTime));
+        System.out.println(Times.HHmmss_SSSS.format(localTime));
+    }
+
+    private void dateTimesDemo() {
+        System.out.println("-------------------- date times demo --------------------");
+        ZonedDateTime zonedDateTime = ZonedDateTime.now();
+        System.out.println(DateTimes.toEpoch(zonedDateTime));
+        System.out.println(DateTimes.dd_MM_yyyy_HH_mm_ss_SSSS.format(zonedDateTime));
+    }
 
     public static void main(String[] args) {
         new Demo();

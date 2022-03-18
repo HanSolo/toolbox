@@ -2,18 +2,16 @@ import java.text.SimpleDateFormat
 
 plugins {
     id 'java-library'
+    id 'application'
     id 'maven-publish'
     id 'signing'
-    id 'org.javamodularity.moduleplugin' version '1.8.10'
-    id 'org.beryx.jlink'                 version '2.24.4'
-    id 'net.nemerosa.versioning'         version '2.15.1'
+    id 'net.nemerosa.versioning' version '2.15.1'
 }
 
 apply plugin: 'maven-publish'
 apply plugin: 'signing'
 
 description = 'Toolbox contains a collection of useful tools incl. events, properties, helper classes etc.'
-mainClassName = "$moduleName/eu.hansolo.toolbox/Demo"
 
 Date buildTimeAndDate = new Date()
 ext {
@@ -26,6 +24,11 @@ ext {
     ciGHToken       = System.getenv('GH_TOKEN')
     gpgkey          = System.getenv("GPG_PRIVATE_KEY")
     gpgpassphrase   = System.getenv("PASSPHRASE")
+}
+
+application {
+    mainModule = 'eu.hansolo.toolbox'
+    mainClass  = 'eu.hansolo.toolbox.Demo'
 }
 
 repositories {
@@ -59,7 +62,7 @@ jar {
                 'Bundle-License'        : 'https://www.apache.org/licenses/LICENSE-2.0;description=Apache License Version 2.0;link=https://spdx.org/licenses/Apache-2.0.html',
                 'Bundle-Description'    : description,
                 'Bundle-SymbolicName'   : 'eu.hansolo.toolbox',
-                'Export-Package'        : 'eu.hansolo.toolbox,eu.hansolo.toolbox.properties,eu.hansolo.toolbox.evt,eu.hansolo.toolbox.evt.type,eu.hansolo.toolbox.tuples,eu.hansolo.toolbox.unit',
+                'Export-Package'        : 'eu.hansolo.toolbox,eu.hansolo.toolbox.properties,eu.hansolo.toolbox.evt,eu.hansolo.toolbox.evt.type,eu.hansolo.toolbox.tuples,eu.hansolo.toolbox.unit,eu.hansolo.toolbox.time',
                 'Class-Path'            : configurations.runtimeClasspath.files.collect { it.getName() }.join(' '),
                 'Main-Class'            : 'eu.hansolo.toolbox.Demo'
         )
@@ -77,7 +80,7 @@ if (JavaVersion.current().isJava8Compatible()) {
 
 // start the demo from gradle
 task Demo(type: JavaExec) {
-    main = "eu.hansolo.toolbox/Demo"
+    mainClass = "eu.hansolo.toolbox.Demo"
     classpath = sourceSets.main.runtimeClasspath
 }
 
