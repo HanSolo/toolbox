@@ -33,6 +33,9 @@ import eu.hansolo.toolbox.properties.IntegerProperty;
 import eu.hansolo.toolbox.properties.ObjectProperty;
 import eu.hansolo.toolbox.properties.ReadOnlyBooleanProperty;
 import eu.hansolo.toolbox.properties.ReadOnlyDoubleProperty;
+import eu.hansolo.toolbox.statemachine.State;
+import eu.hansolo.toolbox.statemachine.StateChangeException;
+import eu.hansolo.toolbox.statemachine.StateMachine;
 import eu.hansolo.toolbox.time.DateTimes;
 import eu.hansolo.toolbox.time.Dates;
 import eu.hansolo.toolbox.time.Times;
@@ -44,9 +47,12 @@ import eu.hansolo.toolbox.unit.Converter;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZonedDateTime;
+import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 
 import static eu.hansolo.toolbox.unit.Category.BLOOD_GLUCOSE;
 import static eu.hansolo.toolbox.unit.Category.LENGTH;
@@ -92,6 +98,8 @@ public class Demo {
         timesDemo();
 
         dateTimesDemo();
+
+        stateMachineDemo();
     }
 
     private void propertiesDemo() {
@@ -415,6 +423,71 @@ public class Demo {
         ZonedDateTime zonedDateTime = ZonedDateTime.now();
         System.out.println(DateTimes.toEpoch(zonedDateTime));
         System.out.println(DateTimes.dd_MM_yyyy_HH_mm_ss_SSSS.format(zonedDateTime));
+    }
+
+    private void stateMachineDemo() {
+        enum MyState implements State {
+            // Available states
+            IDLE("IDLE"),
+            BUSY("BUSY"),
+            ERROR("ERROR"),
+            FINISHED("FINISHED");
+
+
+            // Definition of state transitions
+            static {
+                IDLE.canTransitionTo(IDLE, BUSY, ERROR);
+                BUSY.canTransitionTo(IDLE, BUSY, ERROR);
+                ERROR.canTransitionTo(IDLE, ERROR);
+            }
+
+            private final String name;
+            private       Set    transitions;
+
+
+            // ******************** Constructor ***************************************
+            MyState(String name) {
+                this.name = name;
+            }
+
+
+            // ******************** Private Methods ***********************************
+            private void canTransitionTo(final MyState... transitions) { this.transitions = EnumSet.copyOf(Arrays.asList(transitions)); }
+
+
+            // ******************** Public Methods ************************************
+            @Override public Set<State> getTransitions() { return this.transitions; }
+
+            @Override public boolean canChangeTo(final State state) { return this.transitions.contains(state); }
+
+            @Override public String getName() { return this.name; }
+        }
+        StateMachine<MyState> stateMachine = new StateMachine<>() {
+            private ObjectProperty<MyState> state = new ObjectProperty<>(MyState.IDLE);
+
+
+            // ******************** Public Methods ****************************
+            @Override public State getState() { return this.state.get(); }
+
+            @Override public void setState(final MyState state) throws StateChangeException {
+                if (this.state.get().canChangeTo(state)) {
+                    this.state.set(state);
+                } else {
+                    throw new StateChangeException("Not allowed to change from " + this.state.get().getName() + " to " + state.getName());
+                }
+            }
+            @Override public ObjectProperty<MyState> stateProperty() { return state; }
+        };
+
+        stateMachine.stateProperty().addObserver(e -> System.out.println("State changed from " + e.getOldValue().getName() + " to " + e.getValue().getName()));
+        try {
+            stateMachine.setState(MyState.BUSY);
+            stateMachine.setState(MyState.IDLE);
+            stateMachine.setState(MyState.ERROR);
+            stateMachine.setState(MyState.BUSY);
+        } catch (StateChangeException e) {
+            System.out.println(e.getMessage() + " -> StateMachine still in state: " + stateMachine.getState().getName());
+        }
     }
 
     public static void main(String[] args) {
