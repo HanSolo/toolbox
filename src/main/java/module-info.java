@@ -6,6 +6,7 @@ module eu.hansolo.toolbox {
     exports eu.hansolo.toolbox.evt;
     exports eu.hansolo.toolbox.observables;
     exports eu.hansolo.toolbox.properties;
+    exports eu.hansolo.toolbox.statemachine;
     exports eu.hansolo.toolbox.tuples;
     exports eu.hansolo.toolbox.unit;
     exports eu.hansolo.toolbox.time;
