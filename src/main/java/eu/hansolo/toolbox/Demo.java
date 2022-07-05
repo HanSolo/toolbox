@@ -121,7 +121,7 @@ public class Demo {
 
         doubleProperty.addOnChange(doubleChangeObserver);
 
-        doubleProperty.removeListener(doubleChangeObserver);
+        doubleProperty.removeObserver(doubleChangeObserver);
 
         doubleProperty.removeAllObservers();
 

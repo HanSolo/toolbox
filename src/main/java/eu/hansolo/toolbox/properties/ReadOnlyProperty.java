@@ -92,7 +92,7 @@ public abstract class ReadOnlyProperty<T extends Object> {
         if (observers.contains(observer)) { return; }
         observers.add(observer);
     }
-    public void removeListener(final EvtObserver<PropertyChangeEvt<T>> observer) {
+    public void removeObserver(final EvtObserver<PropertyChangeEvt<T>> observer) {
         if (null == observers || null == observer) { return; }
         if (observers.contains(observer)) { observers.remove(observer); }
     }
