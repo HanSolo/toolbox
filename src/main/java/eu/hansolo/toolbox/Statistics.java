@@ -44,8 +44,8 @@ public class Statistics {
 
     public static final double getMax(final List<Double> data) { return data.stream().mapToDouble(v -> v).max().orElse(0); }
 
-    public static final double getAverage(final List<Double> DATA) {
-        return DATA.stream().mapToDouble(data -> data.doubleValue()).average().orElse(-1);
+    public static final double getAverage(final List<Double> data) {
+        return data.stream().mapToDouble(d -> d.doubleValue()).average().orElse(-1);
     }
 
     public static final double percentile(List<Double> entries, double percentile) {

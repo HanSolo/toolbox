@@ -252,7 +252,7 @@ public class Helper {
         return result;
     }
 
-    public static String readFromInputStream(final InputStream inputStream) throws IOException {
+    public static final String readFromInputStream(final InputStream inputStream) throws IOException {
         StringBuilder resultStringBuilder = new StringBuilder();
         try (BufferedReader br = new BufferedReader(new InputStreamReader(inputStream))) {
             String line;
