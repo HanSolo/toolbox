@@ -49,6 +49,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NavigableMap;
+import java.util.Optional;
 import java.util.TreeMap;
 import java.util.function.Predicate;
 import java.util.regex.Matcher;
@@ -498,5 +499,9 @@ public class Helper {
         final StringBuilder builder = new StringBuilder();
         for (byte b : bytes) { builder.append(String.format("%02x", b)); }
         return builder.toString();
+    }
+
+    public static final Optional<String> nonEmpty(final String text) {
+        return (null == text || text.length() == 0) ? Optional.empty() : Optional.ofNullable(text);
     }
 }
