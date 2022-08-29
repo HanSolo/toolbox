@@ -264,17 +264,28 @@ public class Helper {
         return resultStringBuilder.toString();
     }
 
-    public static final String readTextFile(final String filename) {
+    public static final String readTextFileToString(final String filename) {
         if (null == filename || !new File(filename).exists()) { throw new IllegalArgumentException("File: " + filename + " not found or null"); }
         try {
-            Path fileName = Path.of(filename);
-            return Files.readString(fileName);
+            Path fileObj = Path.of(filename);
+            return Files.readString(fileObj);
         } catch (IOException e) {
             return "";
         }
     }
-    public static final void saveTxtFile(final String filename, final String text) {
-        if (null == text || text.isEmpty()) { return; }
+    public static final String readTextFileToString(final File file) {
+        if (null == file || !file.isFile()) { throw new IllegalArgumentException("Given file is either null or no file"); }
+        try {
+            Path fileObj = file.toPath();
+            return Files.readString(fileObj);
+        } catch (IOException e) {
+            return "";
+        }
+    }
+
+    public static final void saveStringToTextFile(final String filename, final String text) {
+        if (null == filename || filename.isEmpty()) { throw new IllegalArgumentException("filename cannot be null or empty"); }
+        if (null == text || text.isEmpty()) { throw new IllegalArgumentException("text cannot be null or empty"); }
         try {
             Files.write(Paths.get("/" + filename), text.getBytes());
         } catch (IOException e) {
