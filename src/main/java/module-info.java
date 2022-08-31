@@ -2,6 +2,7 @@ module eu.hansolo.toolbox {
 
     requires java.base;
 
+    exports eu.hansolo.toolbox.evtbus;
     exports eu.hansolo.toolbox.evt.type;
     exports eu.hansolo.toolbox.evt;
     exports eu.hansolo.toolbox.observables;
