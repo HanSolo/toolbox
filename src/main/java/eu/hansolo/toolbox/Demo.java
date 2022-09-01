@@ -18,12 +18,17 @@
 
 package eu.hansolo.toolbox;
 
+import eu.hansolo.toolbox.evt.Evt;
 import eu.hansolo.toolbox.evt.EvtObserver;
 import eu.hansolo.toolbox.evt.EvtType;
+import eu.hansolo.toolbox.evt.type.ChangeEvt;
 import eu.hansolo.toolbox.evt.type.ListChangeEvt;
 import eu.hansolo.toolbox.evt.type.MapChangeEvt;
 import eu.hansolo.toolbox.evt.type.MatrixItemChangeEvt;
 import eu.hansolo.toolbox.evt.type.PropertyChangeEvt;
+import eu.hansolo.toolbox.evtbus.EvtBus;
+import eu.hansolo.toolbox.evtbus.Subscriber;
+import eu.hansolo.toolbox.evtbus.Topic;
 import eu.hansolo.toolbox.observables.ObservableList;
 import eu.hansolo.toolbox.observables.ObservableMap;
 import eu.hansolo.toolbox.observables.ObservableMatrix;
@@ -51,8 +56,12 @@ import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import static eu.hansolo.toolbox.unit.Category.BLOOD_GLUCOSE;
 import static eu.hansolo.toolbox.unit.Category.LENGTH;
@@ -100,6 +109,8 @@ public class Demo {
         dateTimesDemo();
 
         stateMachineDemo();
+
+        evtBusDemo();
     }
 
     private void propertiesDemo() {
@@ -426,6 +437,7 @@ public class Demo {
     }
 
     private void stateMachineDemo() {
+        System.out.println("-------------------- state machine demo --------------------");
         enum MyState implements State {
             // Available states
             IDLE("IDLE"),
@@ -488,6 +500,182 @@ public class Demo {
         } catch (StateChangeException e) {
             System.out.println(e.getMessage() + " -> StateMachine still in state: " + stateMachine.getState().getName());
         }
+    }
+
+    private void evtBusDemo() {
+        System.out.println("-------------------- evtbus demo --------------------");
+        class MyTopic implements Topic {
+            private final String id;
+            private final String name;
+
+
+            // ******************** Constructors **********************************
+            public MyTopic(final String name) {
+                this.id   = UUID.randomUUID().toString();
+                this.name = name;
+            }
+
+
+            // ******************** Methods ***************************************
+            @Override public String getId() { return id; }
+
+            @Override public String getName() { return name; }
+
+            @Override public boolean equals(final Object o) {
+                if (this == o) { return true; }
+                if (o == null || getClass() != o.getClass()) { return false; }
+                MyTopic myTopic = (MyTopic) o;
+                return id.equals(myTopic.id);
+            }
+
+            @Override public int hashCode() { return Objects.hash(id); }
+        }
+
+        class Msg {
+            private final String id;
+            private final String txt;
+
+
+            // ******************** Constructors **********************************
+            public Msg(final String txt) {
+                this.id  = UUID.randomUUID().toString();
+                this.txt = txt;
+            }
+
+
+            // ******************** Methods ***************************************
+            public String getId() { return id; }
+
+            public String getTxt() { return txt; }
+
+            @Override public String toString() { return txt; }
+
+            @Override public boolean equals(final Object o) {
+                if (this == o) { return true; }
+                if (o == null || getClass() != o.getClass()) { return false; }
+                Msg msg = (Msg) o;
+                return id.equals(msg.id);
+            }
+
+            @Override public int hashCode() { return Objects.hash(id); }
+        }
+
+        class TopicEvt extends ChangeEvt {
+            public static final EvtType<TopicEvt> ANY        = new EvtType<>(ChangeEvt.ANY, "ANY");
+            public static final EvtType<TopicEvt> NEW_MSG    = new EvtType<>(TopicEvt.ANY, "NEW_MSG");
+            public static final EvtType<TopicEvt> UPDATE_MSG = new EvtType<>(TopicEvt.ANY, "UPDATE_MSG");
+
+            private final Msg msg;
+
+
+            // ******************** Constructors **************************************
+            public TopicEvt(final Object src, final EvtType<TopicEvt> evtType, final Msg msg) {
+                super(src, evtType);
+                this.msg = msg;
+            }
+
+
+
+            // ******************** Methods *******************************************
+            public Msg getMsg() { return msg; }
+
+            @Override public EvtType<? extends TopicEvt> getEvtType() { return (EvtType<? extends TopicEvt>) super.getEvtType(); }
+
+            @Override public boolean equals(final Object o) {
+                if (this == o) { return true; }
+                if (o == null || getClass() != o.getClass()) { return false; }
+                if (!super.equals(o)) { return false; }
+                TopicEvt that = (TopicEvt) o;
+                return Objects.equals(that.getMsg(), this.getMsg());
+            }
+
+            @Override public int hashCode() {
+                return Objects.hash(super.hashCode(), msg);
+            }
+        }
+
+        class TopicEvtBus implements EvtBus {
+            private final Map<Topic, Map<EvtType, List<Subscriber>>> topicSubscribers = new ConcurrentHashMap<>();
+
+
+            // ******************** Methods *******************************************
+            @Override public <T extends Evt> void publish(final Topic topic, final T evt) {
+                final EvtType type = evt.getEvtType();
+                if (topicSubscribers.containsKey(topic)) {
+                    Map<EvtType, List<Subscriber>> subscribers = topicSubscribers.get(topic);
+                    subscribers.entrySet()
+                               .stream()
+                               .filter(entry -> entry.getKey().equals(TopicEvt.ANY))
+                               .forEach(entry -> entry.getValue().forEach(observer -> observer.handle(evt)));
+                    if (subscribers.containsKey(type) && !type.equals(TopicEvt.ANY)) {
+                        subscribers.get(type).forEach(subscriber -> subscriber.handle(evt));
+                    }
+                }
+            }
+
+            @Override public void subscribe(final Topic topic, final Subscriber subscriber) {
+                final EvtType evtType = subscriber.getEvtType();
+                if (!topicSubscribers.containsKey(topic))                           { topicSubscribers.put(topic, new ConcurrentHashMap<>()); }
+                if (!topicSubscribers.get(topic).containsKey(evtType))              { topicSubscribers.get(topic).put(evtType, new CopyOnWriteArrayList<>()); }
+                if (!topicSubscribers.get(topic).get(evtType).contains(subscriber)) { topicSubscribers.get(topic).get(evtType).add(subscriber); }
+            }
+
+            @Override public void unsubscribe(final Topic topic, final Subscriber subscriber) {
+                final EvtType evtType = subscriber.getEvtType();
+                if (topicSubscribers.containsKey(topic)) {
+                    if (topicSubscribers.get(topic).containsKey(evtType)) {
+                        if (topicSubscribers.get(topic).get(evtType).contains(subscriber)) {
+                            // Remove subscriber
+                            topicSubscribers.get(topic).get(evtType).remove(subscriber);
+
+                            // Remove evtType from map if it has no subscribers
+                            if (topicSubscribers.get(topic).get(evtType).isEmpty()) { topicSubscribers.get(topic).remove(evtType); }
+
+                            // Remove topic from map if it has no subscribers
+                            if (topicSubscribers.get(topic).isEmpty()) { topicSubscribers.remove(topic); }
+                        }
+                    }
+                }
+            }
+        }
+
+        class TopicSubscriber implements Subscriber {
+            private final String  name;
+            private final EvtType evtType;
+
+
+            // ******************** Constructors **************************************
+            public TopicSubscriber(final String name, final EvtType evtType) {
+                this.name    = name;
+                this.evtType = evtType;
+            }
+
+
+            // ******************** Methods *******************************************
+            public String getName() { return name; }
+
+            @Override public EvtType<Evt> getEvtType() { return evtType; }
+
+            @Override public void handle(final Evt evt) {
+                TopicEvt topicEvt = (TopicEvt) evt;
+                System.out.println(name + ": " + " -> " + topicEvt.getMsg().getTxt());
+            }
+        }
+
+        // Test
+        TopicEvtBus eventBus = new TopicEvtBus();
+        MyTopic topic1 = new MyTopic("Topic 1");
+        MyTopic topic2 = new MyTopic("Topic 2");
+
+        TopicSubscriber newMsgSubscriber = new TopicSubscriber("newMsgSubscriber", TopicEvt.NEW_MSG);
+        TopicSubscriber updateSubscriber = new TopicSubscriber("updateSubscriber", TopicEvt.UPDATE_MSG);
+
+        eventBus.subscribe(topic1, newMsgSubscriber);
+        eventBus.subscribe(topic2, updateSubscriber);
+
+        eventBus.publish(topic1, new TopicEvt(eventBus, TopicEvt.NEW_MSG, new Msg("New Msg topic 1")));
+        eventBus.publish(topic1, new TopicEvt(eventBus, TopicEvt.UPDATE_MSG, new Msg("Update Msg topic 1")));
+        eventBus.publish(topic2, new TopicEvt(eventBus, TopicEvt.UPDATE_MSG, new Msg("Update Msg topic 2")));
     }
 
     public static void main(String[] args) {

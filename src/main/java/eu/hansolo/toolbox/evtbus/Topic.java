@@ -18,7 +18,9 @@
 
 package eu.hansolo.toolbox.evtbus;
 
-@FunctionalInterface
 public interface Topic {
+
+    String getId();
+
     String getName();
 }
