@@ -49,6 +49,7 @@ public class Constants {
     public static final String             CURLY_BRACKET_CLOSE      = "}";
     public static final String             INDENTED_QUOTES          = "  \"";
     public static final String             QUOTES                   = "\"";
+    public static final String             QUOTES_COLON             = "\":";
     public static final String             COLON                    = ":";
     public static final String             COMMA                    = ",";
     public static final String             SLASH                    = "/";
