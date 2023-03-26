@@ -18,6 +18,7 @@
 
 package eu.hansolo.toolbox;
 
+import eu.hansolo.toolbox.Helper.SystemSummary;
 import eu.hansolo.toolbox.evt.Evt;
 import eu.hansolo.toolbox.evt.EvtObserver;
 import eu.hansolo.toolbox.evt.EvtType;
@@ -111,6 +112,8 @@ public class Demo {
         stateMachineDemo();
 
         evtBusDemo();
+
+        helperDemo();
     }
 
     private void propertiesDemo() {
@@ -676,6 +679,12 @@ public class Demo {
         eventBus.publish(topic1, new TopicEvt(eventBus, TopicEvt.NEW_MSG, new Msg("New Msg topic 1")));
         eventBus.publish(topic1, new TopicEvt(eventBus, TopicEvt.UPDATE_MSG, new Msg("Update Msg topic 1")));
         eventBus.publish(topic2, new TopicEvt(eventBus, TopicEvt.UPDATE_MSG, new Msg("Update Msg topic 2")));
+    }
+
+    private void helperDemo() {
+        System.out.println("-------------------- helper demo --------------------");
+        SystemSummary systemSummary = Helper.getSystemSummary();
+        System.out.println(systemSummary);
     }
 
     public static void main(String[] args) {

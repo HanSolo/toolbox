@@ -18,12 +18,23 @@
 
 package eu.hansolo.toolbox;
 
+import eu.hansolo.toolbox.Constants.Architecture;
+import eu.hansolo.toolbox.Constants.OperatingMode;
+import eu.hansolo.toolbox.Constants.OperatingSystem;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.lang.management.ClassLoadingMXBean;
+import java.lang.management.CompilationMXBean;
+import java.lang.management.ManagementFactory;
+import java.lang.management.MemoryMXBean;
+import java.lang.management.MemoryUsage;
+import java.lang.management.OperatingSystemMXBean;
+import java.lang.management.RuntimeMXBean;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -52,24 +63,87 @@ import java.util.NavigableMap;
 import java.util.Optional;
 import java.util.TreeMap;
 import java.util.function.Predicate;
+import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collector;
+import java.util.stream.Collectors;
 import java.util.zip.CRC32;
 import java.util.zip.Checksum;
 
+import static eu.hansolo.toolbox.Constants.COMMA;
+import static eu.hansolo.toolbox.Constants.CURLY_BRACKET_CLOSE;
+import static eu.hansolo.toolbox.Constants.CURLY_BRACKET_OPEN;
 import static eu.hansolo.toolbox.Constants.EPSILON;
 import static eu.hansolo.toolbox.Constants.FLOAT_PATTERN;
 import static eu.hansolo.toolbox.Constants.HEX_PATTERN;
 import static eu.hansolo.toolbox.Constants.INT_PATTERN;
+import static eu.hansolo.toolbox.Constants.QUOTES;
+import static eu.hansolo.toolbox.Constants.QUOTES_COLON;
+import static eu.hansolo.toolbox.Constants.SQUARE_BRACKET_CLOSE;
+import static eu.hansolo.toolbox.Constants.SQUARE_BRACKET_OPEN;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 
 public class Helper {
     private Helper() {}
 
-    private static final Matcher  INT_MATCHER   = INT_PATTERN.matcher("");
-    private static final Matcher  FLOAT_MATCHER = FLOAT_PATTERN.matcher("");
-    private static final Matcher  HEX_MATCHER   = HEX_PATTERN.matcher("");
+    private static final String[] DETECT_ALPINE_CMDS       = { "/bin/sh", "-c", "cat /etc/os-release | grep 'NAME=' | grep -ic 'Alpine'" };
+    private static final String[] UX_DETECT_ARCH_CMDS      = { "/bin/sh", "-c", "uname -m" };
+    private static final String[] MAC_DETECT_ROSETTA2_CMDS = { "/bin/sh", "-c", "sysctl -in sysctl.proc_translated" };
+    private static final String[] WIN_DETECT_ARCH_CMDS     = { "cmd.exe", "/c", "SET Processor" };
+    private static final Pattern  ARCHITECTURE_PATTERN     = Pattern.compile("(PROCESSOR_ARCHITECTURE)=([a-zA-Z0-9_\\-]+)");
+    private static final Matcher  ARCHITECTURE_MATCHER     = ARCHITECTURE_PATTERN.matcher("");
+    private static final Matcher  INT_MATCHER              = INT_PATTERN.matcher("");
+    private static final Matcher  FLOAT_MATCHER            = FLOAT_PATTERN.matcher("");
+    private static final Matcher  HEX_MATCHER              = HEX_PATTERN.matcher("");
+
+    public record RootInfo(String absolutePath, long totalSpace, long freeSpace, long usableSpace) {}
+    public record JvmInfo(String vmName, String vmVendor, String vmVersion, String specName, String specVendor, String specVersion) {}
+    public record OperatingSystemInfo(String arc, int availableProcessors, String operatingSystemName, String operatingSystemVersion, double systemLoadAverage) {}
+    public record CompilationInfo(long totalCompilationTime) {}
+    public record ClassLoadingInfo(long totalLoadedClassCount, int loadedClassCount, long unloadedClassCount) {}
+    public record HeapInfo(MemoryUsage heapMemoryUsage, MemoryUsage noneHeapMemoryUsage) {}
+    public record MemInfo(long totalMemory, long freeMemory, long maxMemory) {}
+    public record SystemSummary(Architecture architecture, int availableProcessors, int availableThreads, MemInfo memInfo, HeapInfo heapInfo, List<RootInfo> rootInfos, OperatingSystem operatingSystem, OperatingSystemInfo operatingSystemInfo, OperatingMode operatingMode, JvmInfo jvmInfo) {
+        @Override public String toString() {
+            StringBuilder msgBuilder = new StringBuilder().append(CURLY_BRACKET_OPEN)
+                                                          .append(QUOTES).append("architecture").append(QUOTES_COLON).append(QUOTES).append(architecture.name()).append(QUOTES).append(COMMA)
+                                                          .append(QUOTES).append("available_processors").append(QUOTES_COLON).append(availableProcessors).append(COMMA)
+                                                          .append(QUOTES).append("available_threads").append(QUOTES_COLON).append(availableThreads).append(COMMA)
+                                                          .append(QUOTES).append("total_memory").append(QUOTES_COLON).append(memInfo.totalMemory()).append(COMMA)
+                                                          .append(QUOTES).append("free_memory").append(QUOTES_COLON).append(memInfo.freeMemory()).append(COMMA)
+                                                          .append(QUOTES).append("max_memory").append(QUOTES_COLON).append(memInfo.maxMemory()).append(COMMA)
+                                                          .append(QUOTES).append("heap_max").append(QUOTES_COLON).append(heapInfo.heapMemoryUsage.getMax()).append(COMMA)
+                                                          .append(QUOTES).append("heap_committed").append(QUOTES_COLON).append(heapInfo.heapMemoryUsage.getCommitted()).append(COMMA)
+                                                          .append(QUOTES).append("heap_used").append(QUOTES_COLON).append(heapInfo.heapMemoryUsage.getUsed()).append(COMMA)
+                                                          .append(QUOTES).append("non_heap_max").append(QUOTES_COLON).append(heapInfo.noneHeapMemoryUsage.getMax()).append(COMMA)
+                                                          .append(QUOTES).append("non_heap_committed").append(QUOTES_COLON).append(heapInfo.noneHeapMemoryUsage.getCommitted()).append(COMMA)
+                                                          .append(QUOTES).append("non_heap_used").append(QUOTES_COLON).append(heapInfo.noneHeapMemoryUsage.getUsed()).append(COMMA)
+                                                          .append(QUOTES).append("root_infos").append(QUOTES_COLON).append(SQUARE_BRACKET_OPEN);
+            rootInfos.forEach(rootInfo ->
+                msgBuilder.append(CURLY_BRACKET_OPEN)
+                          .append(QUOTES).append("absolute_path").append(QUOTES_COLON).append(QUOTES).append(rootInfo.absolutePath()).append(QUOTES).append(COMMA)
+                          .append(QUOTES).append("total_space").append(QUOTES_COLON).append(rootInfo.totalSpace()).append(COMMA)
+                          .append(QUOTES).append("free_space").append(QUOTES_COLON).append(rootInfo.freeSpace()).append(COMMA)
+                          .append(QUOTES).append("usable_space").append(QUOTES_COLON).append(rootInfo.usableSpace())
+                          .append(CURLY_BRACKET_CLOSE).append(COMMA));
+            msgBuilder.setLength(msgBuilder.length() - 1);
+            msgBuilder.append(SQUARE_BRACKET_CLOSE).append(COMMA)
+                      .append(QUOTES).append("operating_system").append(QUOTES_COLON).append(QUOTES).append(operatingSystem.name()).append(QUOTES).append(COMMA)
+                      .append(QUOTES).append("operating_system_name").append(QUOTES_COLON).append(QUOTES).append(operatingSystemInfo.operatingSystemName).append(QUOTES).append(COMMA)
+                      .append(QUOTES).append("operating_system_version").append(QUOTES_COLON).append(QUOTES).append(operatingSystemInfo.operatingSystemVersion()).append(QUOTES).append(COMMA)
+                      .append(QUOTES).append("operating_mode").append(QUOTES_COLON).append(QUOTES).append(operatingMode.name()).append(QUOTES).append(COMMA)
+                      .append(QUOTES).append("vm_name").append(QUOTES_COLON).append(QUOTES).append(jvmInfo.vmName()).append(QUOTES).append(COMMA)
+                      .append(QUOTES).append("vm_vendor").append(QUOTES_COLON).append(QUOTES).append(jvmInfo.vmVendor()).append(QUOTES).append(COMMA)
+                      .append(QUOTES).append("vm_version").append(QUOTES_COLON).append(QUOTES).append(jvmInfo.vmVersion()).append(QUOTES).append(COMMA)
+                      .append(QUOTES).append("spec_name").append(QUOTES_COLON).append(QUOTES).append(jvmInfo.specName()).append(QUOTES).append(COMMA)
+                      .append(QUOTES).append("spec_vendor").append(QUOTES_COLON).append(QUOTES).append(jvmInfo.specVendor()).append(QUOTES).append(COMMA)
+                      .append(QUOTES).append("spec_version").append(QUOTES_COLON).append(QUOTES).append(jvmInfo.specVersion()).append(QUOTES)
+                      .append(CURLY_BRACKET_CLOSE);
+            return msgBuilder.toString();
+        }
+    }
 
     public static final <T extends Number> T clamp(final T min, final T max, final T value) {
         if (value.doubleValue() < min.doubleValue()) return min;
@@ -514,5 +588,193 @@ public class Helper {
 
     public static final Optional<String> nonEmpty(final String text) {
         return (null == text || text.length() == 0) ? Optional.empty() : Optional.ofNullable(text);
+    }
+
+    public static final String padLeft(final String input, final char ch, final int length) {
+        return String.format("%" + length + "s", input).replace(' ', ch);
+    }
+    public static final String padRight(final String input, final char ch, final int length) {
+        return String.format("%" + (-length) + "s", input).replace(' ', ch);
+    }
+
+    public static final int getAvailableProcessors() {
+        final Runtime runtime = Runtime.getRuntime();
+        return runtime.availableProcessors();
+    }
+
+    public static final long getTotalMemory() {
+        final Runtime runtime = Runtime.getRuntime();
+        return runtime.totalMemory();
+    }
+
+    public static final long getMaxMemory() {
+        final Runtime runtime = Runtime.getRuntime();
+        return runtime.maxMemory();
+    }
+
+    public static final long getFreeMemory() {
+        final Runtime runtime = Runtime.getRuntime();
+        return runtime.freeMemory();
+    }
+
+    public static final Architecture getArchitecture() {
+        OperatingSystemInfo osInfo = getOperatingSystemInfo();
+        Architecture        arch   = Architecture.fromText(osInfo.arc());
+        return Architecture.NOT_FOUND == arch ? getArchitecture(getOperatingSystem()) : arch;
+    }
+    public static final Architecture getArchitecture(final OperatingSystem operatingSystem) {
+        // Try to get architecture via process
+        try {
+            final ProcessBuilder processBuilder = OperatingSystem.WINDOWS == operatingSystem ? new ProcessBuilder(WIN_DETECT_ARCH_CMDS) : new ProcessBuilder(UX_DETECT_ARCH_CMDS);
+            final Process        process        = processBuilder.start();
+            final String         result         = new BufferedReader(new InputStreamReader(process.getInputStream())).lines().collect(Collectors.joining("\n"));
+            switch(operatingSystem) {
+                case WINDOWS:
+                    ARCHITECTURE_MATCHER.reset(result);
+                    final List<MatchResult> results = ARCHITECTURE_MATCHER.results().collect(Collectors.toList());
+                    if(results.size() > 0) { Architecture.fromText(results.get(0).group(2)); }
+                    break;
+                case MACOS: return Architecture.fromText(result);
+                case LINUX: return Architecture.fromText(result);
+            }
+        } catch (IOException e) {
+            return Architecture.NOT_FOUND;
+        }
+
+        // Try to get architecture via system property
+        final String arch = System.getProperty("os.arch").toLowerCase(Locale.ENGLISH);
+        if (arch.contains("sparc"))                           { return Architecture.SPARC; }
+        if (arch.contains("amd64") || arch.contains("86_64")) { return Architecture.X64; }
+        if (arch.contains("86"))                              { return Architecture.X86; }
+        if (arch.contains("s390x"))                           { return Architecture.S390X; }
+        if (arch.contains("ppc64"))                           { return Architecture.PPC64; }
+        if (arch.contains("arm") && arch.contains("64"))      { return Architecture.AARCH64; }
+        if (arch.contains("arm"))                             { return Architecture.ARM; }
+        if (arch.contains("aarch64"))                         { return Architecture.AARCH64; }
+
+        return Architecture.NOT_FOUND;
+    }
+
+    public static final OperatingSystem getOperatingSystem() {
+        String os = System.getProperty("os.name").toLowerCase();
+        if (os.contains("win")) {
+            return OperatingSystem.WINDOWS;
+        } else if (os.contains("apple") || os.contains("mac")) {
+            return OperatingSystem.MACOS;
+        } else if (os.contains("nix") || os.contains("nux")) {
+            try {
+                final ProcessBuilder processBuilder = new ProcessBuilder(DETECT_ALPINE_CMDS);
+                final Process        process        = processBuilder.start();
+                final String         result         = new BufferedReader(new InputStreamReader(process.getInputStream())).lines().collect(Collectors.joining("\n"));
+                return null == result ? OperatingSystem.LINUX : result.equals("1") ? OperatingSystem.ALPINE_LINUX : OperatingSystem.LINUX;
+            } catch (IOException e) {
+                e.printStackTrace();
+                return OperatingSystem.LINUX;
+            }
+        } else if (os.contains("sunos")) {
+            return OperatingSystem.SOLARIS;
+        } else {
+            OperatingSystemInfo osInfo = getOperatingSystemInfo();
+            return OperatingSystem.fromText(osInfo.operatingSystemName);
+        }
+    }
+
+    public static final OperatingMode getOperatingMode() { return getOperatingMode(getOperatingSystem()); }
+    public static final OperatingMode getOperatingMode(final OperatingSystem operatingSystem) {
+        try {
+            final ProcessBuilder processBuilder = OperatingSystem.WINDOWS == operatingSystem ? new ProcessBuilder(WIN_DETECT_ARCH_CMDS) : new ProcessBuilder(UX_DETECT_ARCH_CMDS);
+            final Process        process        = processBuilder.start();
+            final String         result         = new BufferedReader(new InputStreamReader(process.getInputStream())).lines().collect(Collectors.joining("\n"));
+            switch(operatingSystem) {
+                case WINDOWS:
+                    ARCHITECTURE_MATCHER.reset(result);
+                    final List<MatchResult> results     = ARCHITECTURE_MATCHER.results().collect(Collectors.toList());
+                    final int               noOfResults = results.size();
+                    return noOfResults > 0 ? OperatingMode.NATIVE : OperatingMode.NOT_FOUND;
+                case MACOS:
+                    final ProcessBuilder processBuilder1 = new ProcessBuilder(MAC_DETECT_ROSETTA2_CMDS);
+                    final Process        process1        = processBuilder1.start();
+                    final String         result1         = new BufferedReader(new InputStreamReader(process1.getInputStream())).lines().collect(Collectors.joining("\n"));
+                    return result1.equals("1") ? OperatingMode.EMULATED : OperatingMode.NATIVE;
+                case LINUX:
+                    return OperatingMode.NATIVE;
+                default: return OperatingMode.NOT_FOUND;
+            }
+        } catch (IOException e) {
+            return OperatingMode.NOT_FOUND;
+        }
+    }
+
+    public static final OperatingSystemInfo getOperatingSystemInfo() {
+        final OperatingSystemMXBean operatingSystemMXBean  = ManagementFactory.getOperatingSystemMXBean();
+        final String                arc                    = operatingSystemMXBean.getArch();
+        final int                   availableProcessors    = operatingSystemMXBean.getAvailableProcessors();
+        final String                operatingSystemName    = operatingSystemMXBean.getName();
+        final String                operatingSystemVersion = operatingSystemMXBean.getVersion();
+        final double                systemLoadAverage      = operatingSystemMXBean.getSystemLoadAverage();
+        return new OperatingSystemInfo(arc, availableProcessors, operatingSystemName, operatingSystemVersion, systemLoadAverage);
+    }
+
+    public static final JvmInfo getJvmInfo() {
+        final RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
+        final String        vmName        = runtimeMXBean.getVmName();
+        final String        vmVendor      = runtimeMXBean.getVmVendor();
+        final String        vmVersion     = runtimeMXBean.getVmVersion();
+        final String        specName      = runtimeMXBean.getSpecName();
+        final String        specVendor    = runtimeMXBean.getSpecVendor();
+        final String        specVersion   = runtimeMXBean.getSpecVersion();
+        return new JvmInfo(vmName, vmVendor, vmVersion, specName, specVendor, specVersion);
+    }
+
+    public static final CompilationInfo getCompilationInfo() {
+        final CompilationMXBean compilationMXBean    = ManagementFactory.getCompilationMXBean();
+        final long              totalCompilationtime = compilationMXBean.getTotalCompilationTime();
+        return new CompilationInfo(totalCompilationtime);
+    }
+
+    public static final ClassLoadingInfo getClassLoadingInfo() {
+        final ClassLoadingMXBean classLoadingMXBean    = ManagementFactory.getClassLoadingMXBean();
+        final long               totalLoadedClassCount = classLoadingMXBean.getTotalLoadedClassCount();
+        final int                loadedClassCount      = classLoadingMXBean.getLoadedClassCount();
+        final long               unloadedClassCount    = classLoadingMXBean.getUnloadedClassCount();
+        return new ClassLoadingInfo(totalLoadedClassCount, loadedClassCount, unloadedClassCount);
+    }
+
+    public static final HeapInfo getHeapInfo() {
+        final MemoryMXBean memoryMXBean       = ManagementFactory.getMemoryMXBean();
+        final MemoryUsage  heapMemoryUsage    = memoryMXBean.getHeapMemoryUsage();
+        final MemoryUsage  nonHeapMemoryUsage = memoryMXBean.getNonHeapMemoryUsage();
+        return new HeapInfo(heapMemoryUsage, nonHeapMemoryUsage);
+    }
+
+    public static final MemInfo getMemInfo() {
+        return new MemInfo(getTotalMemory(), getFreeMemory(), getMaxMemory());
+    }
+
+    public static final List<RootInfo> getRootInfos() {
+        final List<RootInfo> rootInfos = new ArrayList<>();
+        final File[]         roots     = File.listRoots();
+        for (File root : roots) {
+            final String absolutePath = root.getAbsolutePath();
+            final long   totalSpace   = root.getTotalSpace();
+            final long   freeSpace    = root.getFreeSpace();
+            final long   usableSpace  = root.getUsableSpace();
+            rootInfos.add(new RootInfo(absolutePath, totalSpace, freeSpace, usableSpace));
+        }
+        return rootInfos;
+    }
+
+    public static final SystemSummary getSystemSummary() {
+        final List<RootInfo>      rootInfos           = getRootInfos();
+        final OperatingSystemInfo osInfo              = getOperatingSystemInfo();
+        final JvmInfo             jvmInfo             = getJvmInfo();
+        final HeapInfo            heapInfo            = getHeapInfo();
+        final MemInfo             memInfo             = getMemInfo();
+        final OperatingSystem     operatingSystem     = getOperatingSystem();
+        final Architecture        arc                 = getArchitecture(operatingSystem);
+        final OperatingMode       operatingMode       = getOperatingMode(operatingSystem);
+        final int                 availableProcessors = osInfo.availableProcessors();
+        final int                 availableThreads    = getAvailableProcessors();
+        return new SystemSummary(arc, availableProcessors, availableThreads, memInfo, heapInfo, rootInfos, operatingSystem, osInfo, operatingMode, jvmInfo);
     }
 }
