@@ -598,6 +598,11 @@ public class Helper {
     }
 
     public static final int getAvailableProcessors() {
+        final OperatingSystemInfo osInfo = getOperatingSystemInfo();
+        return osInfo.availableProcessors();
+    }
+
+    public static final int getAvailableThreads() {
         final Runtime runtime = Runtime.getRuntime();
         return runtime.availableProcessors();
     }
