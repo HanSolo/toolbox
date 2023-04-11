@@ -597,12 +597,12 @@ public class Helper {
         return String.format("%" + (-length) + "s", input).replace(' ', ch);
     }
 
-    public static final int getAvailableProcessors() {
+    public static final int getPhyiscalCores() {
         final OperatingSystemInfo osInfo = getOperatingSystemInfo();
         return osInfo.availableProcessors();
     }
 
-    public static final int getAvailableThreads() {
+    public static final int getLogicalCores() {
         final Runtime runtime = Runtime.getRuntime();
         return runtime.availableProcessors();
     }
@@ -779,7 +779,7 @@ public class Helper {
         final Architecture        arc                 = getArchitecture(operatingSystem);
         final OperatingMode       operatingMode       = getOperatingMode(operatingSystem);
         final int                 availableProcessors = osInfo.availableProcessors();
-        final int                 availableThreads    = getAvailableProcessors();
+        final int                 availableThreads    = getPhyiscalCores();
         return new SystemSummary(arc, availableProcessors, availableThreads, memInfo, heapInfo, rootInfos, operatingSystem, osInfo, operatingMode, jvmInfo);
     }
 }
