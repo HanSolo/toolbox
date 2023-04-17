@@ -842,7 +842,8 @@ public class Helper {
     }
 
 
-    private static final Integer readFromProc() {
+    // private methods needed to figure out physical number of cores
+    private static Integer readFromProc() {
         final String path = "/proc/cpuinfo";
         File cpuinfo = new File(path);
         if (!cpuinfo.exists()) { return null; }
@@ -874,8 +875,7 @@ public class Helper {
         }
         return null;
     }
-
-    private static final Integer readFromWMIC() {
+    private static Integer readFromWMIC() {
         ProcessBuilder pb = new ProcessBuilder("WMIC", "/OUTPUT:STDOUT", "CPU", "Get", "/Format:List");
         pb.redirectErrorStream(true);
         Process wmicProc;
@@ -896,8 +896,7 @@ public class Helper {
             return null;
         }
     }
-
-    private static final Integer parseWmicOutput(String wmicOutput) {
+    private static Integer parseWmicOutput(String wmicOutput) {
         String[] rows = wmicOutput.split("\n");
         int coreCount = 0;
         for (String row : rows) {
@@ -912,8 +911,7 @@ public class Helper {
         }
         return coreCount > 0 ? coreCount : null;
     }
-
-    private static final Integer readFromSysctlOsX() {
+    private static Integer readFromSysctlOsX() {
         String result = readSysctl("hw.physicalcpu", "-n");
         if (result == null) {
             return null;
@@ -924,8 +922,7 @@ public class Helper {
             return null;
         }
     }
-
-    private static final Integer readFromSysctlFreeBSD() {
+    private static Integer readFromSysctlFreeBSD() {
         String result = readSysctl("dev.cpu");
         if (result == null) {
             return null;
@@ -938,8 +935,7 @@ public class Helper {
         }
         return cpuLocations.isEmpty() ? null : cpuLocations.size();
     }
-
-    private static final String readSysctl(String variable, String... options) {
+    private static String readSysctl(String variable, String... options) {
         List<String> command = new ArrayList<>();
         command.add("sysctl");
         command.addAll(Arrays.asList(options));
@@ -965,8 +961,7 @@ public class Helper {
         if (exitStatus != 0) { return null; }
         return result;
     }
-
-    private static final String readToString(InputStream in, Charset charset) throws IOException {
+    private static String readToString(InputStream in, Charset charset) throws IOException {
         try (InputStreamReader reader = new InputStreamReader(in , charset)) {
             StringWriter sw  = new StringWriter();
             char[]       buf = new char[10000];
@@ -976,8 +971,7 @@ public class Helper {
             return sw.toString();
         }
     }
-
-    private static final int waitFor(Process proc) {
+    private static int waitFor(Process proc) {
         try {
             return proc.waitFor();
         } catch (InterruptedException e) {
