@@ -28,6 +28,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
 import java.lang.management.ClassLoadingMXBean;
 import java.lang.management.CompilationMXBean;
 import java.lang.management.ManagementFactory;
@@ -35,6 +37,7 @@ import java.lang.management.MemoryMXBean;
 import java.lang.management.MemoryUsage;
 import java.lang.management.OperatingSystemMXBean;
 import java.lang.management.RuntimeMXBean;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -52,15 +55,19 @@ import java.time.temporal.ChronoField;
 import java.time.temporal.WeekFields;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Deque;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NavigableMap;
 import java.util.Optional;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.function.Predicate;
 import java.util.regex.MatchResult;
@@ -636,9 +643,19 @@ public class Helper {
         return String.format("%" + (-length) + "s", input).replace(' ', ch);
     }
 
-    public static final int getPhyiscalCores() {
-        final OperatingSystemInfo osInfo = getOperatingSystemInfo();
-        return osInfo.availableProcessors();
+    public static final int getPhysicalCores() {
+        //final OperatingSystemInfo osInfo = getOperatingSystemInfo();
+        //return osInfo.availableProcessors();
+        final OperatingSystem operatingSystem = getOperatingSystem();
+        Integer noOfPhysicalCores;
+        switch(operatingSystem) {
+            case LINUX, ALPINE_LINUX, LINUX_MUSL -> noOfPhysicalCores = readFromProc();
+            case WINDOWS                         -> noOfPhysicalCores =  readFromWMIC();
+            case MACOS                           -> noOfPhysicalCores = readFromSysctlOsX();
+            case FREE_BSD                        -> noOfPhysicalCores =  readFromSysctlFreeBSD();
+            default                              -> noOfPhysicalCores =  -1;
+        }
+        return null == noOfPhysicalCores ? -1 : noOfPhysicalCores;
     }
 
     public static final int getLogicalCores() {
@@ -717,6 +734,8 @@ public class Helper {
             }
         } else if (os.contains("sunos")) {
             return OperatingSystem.SOLARIS;
+        } else if (os.contains("freebsd")) {
+            return OperatingSystem.FREE_BSD;
         } else {
             OperatingSystemInfo osInfo = getOperatingSystemInfo();
             return OperatingSystem.fromText(osInfo.operatingSystemName);
@@ -817,8 +836,152 @@ public class Helper {
         final OperatingSystem     operatingSystem = getOperatingSystem();
         final Architecture        arc             = getArchitecture(operatingSystem);
         final OperatingMode       operatingMode   = getOperatingMode(operatingSystem);
-        final int                 logicalCores    = osInfo.availableProcessors();
-        final int                 physicalCores   = getPhyiscalCores();
+        final int                 logicalCores    = getLogicalCores();
+        final int                 physicalCores   = getPhysicalCores();
         return new SystemSummary(arc, logicalCores, physicalCores, memInfo, heapInfo, rootInfos, operatingSystem, osInfo, operatingMode, jvmInfo);
+    }
+
+
+    private static final Integer readFromProc() {
+        final String path = "/proc/cpuinfo";
+        File cpuinfo = new File(path);
+        if (!cpuinfo.exists()) { return null; }
+        try (InputStream in = new FileInputStream(cpuinfo)) {
+            String s = readToString(in, Charset.forName("UTF-8"));
+            // Count number of different tuples (physical id, core id) to discard hyper threading and multiple sockets
+            Map<String, Set<String>> physicalIdToCoreId = new HashMap<>();
+
+            int coreIdCount = 0;
+            String[] split = s.split("\n");
+            String latestPhysicalId = null;
+            for (String row : split)
+                if (row.startsWith("physical id")) {
+                    latestPhysicalId = row;
+                    if (physicalIdToCoreId.get(row) == null)
+                        physicalIdToCoreId.put(latestPhysicalId, new HashSet<String>());
+
+                } else if (row.startsWith("core id"))
+                    // "physical id" row should always come before "core id" row, so that physicalIdToCoreId should
+                    // not be null here.
+                    physicalIdToCoreId.get(latestPhysicalId).add(row);
+
+            for (Set<String> coreIds : physicalIdToCoreId.values())
+                coreIdCount += coreIds.size();
+
+            return coreIdCount;
+        } catch (SecurityException | IOException e) {
+            String msg = String.format("Error while reading %s", path);
+        }
+        return null;
+    }
+
+    private static final Integer readFromWMIC() {
+        ProcessBuilder pb = new ProcessBuilder("WMIC", "/OUTPUT:STDOUT", "CPU", "Get", "/Format:List");
+        pb.redirectErrorStream(true);
+        Process wmicProc;
+        try {
+            wmicProc = pb.start();
+            wmicProc.getOutputStream().close();
+        } catch (IOException | SecurityException e) {
+            return null;
+        }
+        waitFor(wmicProc);
+        try (InputStream in = wmicProc.getInputStream()) {
+            String wmicOutput = readToString(in, Charset.forName("US-ASCII"));
+            return parseWmicOutput(wmicOutput);
+        } catch (UnsupportedEncodingException e) {
+            // Java implementations are required to support US-ASCII, so this can't happen
+            throw new RuntimeException(e);
+        } catch (SecurityException | IOException e) {
+            return null;
+        }
+    }
+
+    private static final Integer parseWmicOutput(String wmicOutput) {
+        String[] rows = wmicOutput.split("\n");
+        int coreCount = 0;
+        for (String row : rows) {
+            if (row.startsWith("NumberOfCores")) {
+                String num = row.split("=")[1].trim();
+                try {
+                    coreCount += Integer.parseInt(num);
+                } catch (NumberFormatException e) {
+                    return null;
+                }
+            }
+        }
+        return coreCount > 0 ? coreCount : null;
+    }
+
+    private static final Integer readFromSysctlOsX() {
+        String result = readSysctl("hw.physicalcpu", "-n");
+        if (result == null) {
+            return null;
+        }
+        try {
+            return Integer.parseInt(result);
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    private static final Integer readFromSysctlFreeBSD() {
+        String result = readSysctl("dev.cpu");
+        if (result == null) {
+            return null;
+        }
+        Set<String> cpuLocations = new HashSet<>();
+        for (String row : result.split("\n")) {
+            if (row.contains("location")) {
+                cpuLocations.add(row.split("\\\\")[1]);
+            }
+        }
+        return cpuLocations.isEmpty() ? null : cpuLocations.size();
+    }
+
+    private static final String readSysctl(String variable, String... options) {
+        List<String> command = new ArrayList<>();
+        command.add("sysctl");
+        command.addAll(Arrays.asList(options));
+        command.add(variable);
+        ProcessBuilder pb = new ProcessBuilder(command);
+        pb.redirectErrorStream(true);
+        Process sysctlProc;
+        try {
+            sysctlProc = pb.start();
+        } catch (IOException | SecurityException e) {
+            return null;
+        }
+        String result;
+        try {
+            result = readToString(sysctlProc.getInputStream(), Charset.forName("UTF-8")).trim();
+        } catch (UnsupportedEncodingException e) {
+            // Java implementations are required to support UTF-8, so this can't happen
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            return null;
+        }
+        int exitStatus = waitFor(sysctlProc);
+        if (exitStatus != 0) { return null; }
+        return result;
+    }
+
+    private static final String readToString(InputStream in, Charset charset) throws IOException {
+        try (InputStreamReader reader = new InputStreamReader(in , charset)) {
+            StringWriter sw  = new StringWriter();
+            char[]       buf = new char[10000];
+            while (reader.read(buf) != -1) {
+                sw.write(buf);
+            }
+            return sw.toString();
+        }
+    }
+
+    private static final int waitFor(Process proc) {
+        try {
+            return proc.waitFor();
+        } catch (InterruptedException e) {
+            return 1;
+        }
     }
 }
