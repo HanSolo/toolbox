@@ -117,7 +117,7 @@ public class Demo {
     }
 
     private void propertiesDemo() {
-        System.out.println("-------------------- properties demo --------------------");
+        System.out.println("\n-------------------- properties demo --------------------");
         pojo = new PoJo();
         pojo.valueProperty().addObserver(evt -> System.out.println("Value changed from " + evt.getOldValue() + " to " + evt.getValue()));
 
@@ -257,7 +257,7 @@ public class Demo {
     }
 
     private void tuplesDemo() {
-        System.out.println("-------------------- tuples demo --------------------");
+        System.out.println("\n-------------------- tuples demo --------------------");
         Pair<Double, Integer> pair = new Pair(5.0, 3);
         Triplet<Double, Integer, Long> triplet = new Triplet(5.0, 3, 500);
         Quartet<Double, Integer, String, Long> quartet = new Quartet(1.0, 5, "Test", 1000);
@@ -267,7 +267,7 @@ public class Demo {
     }
 
     private void converterDemo() {
-        System.out.println("-------------------- converter demo --------------------");
+        System.out.println("\n-------------------- converter demo --------------------");
         Converter temperatureConverter = new Converter(TEMPERATURE, CELSIUS); // Type Temperature with BaseUnit Celsius
         double    celsius              = 32.0;
         double    fahrenheit           = temperatureConverter.convert(celsius, FAHRENHEIT);
@@ -318,7 +318,7 @@ public class Demo {
     }
 
     private void observableListDemo() {
-        System.out.println("-------------------- observable list demo --------------------");
+        System.out.println("\n-------------------- observable list demo --------------------");
         ObservableList<String> observableList = new ObservableList<>();
         observableList.addListChangeObserver(ListChangeEvt.ANY, e -> {
             EvtType<? extends ListChangeEvt<String>> type = e.getEvtType();
@@ -354,7 +354,7 @@ public class Demo {
     }
 
     private void observableMapDemo() {
-        System.out.println("-------------------- observable map demo --------------------");
+        System.out.println("\n-------------------- observable map demo --------------------");
         ObservableMap<String, Integer> observableMap = new ObservableMap<>();
         observableMap.addMapChangeObserver(MapChangeEvt.ANY, e -> {
             EvtType<? extends MapChangeEvt<String, Integer>> type = e.getEvtType();
@@ -387,7 +387,7 @@ public class Demo {
     }
 
     private void observableMatrixDemo() {
-        System.out.println("-------------------- observable matrix demo --------------------");
+        System.out.println("\n-------------------- observable matrix demo --------------------");
         final Random rnd  = new Random();
         final int    cols = 3;
         final int    rows = 2;
@@ -414,7 +414,7 @@ public class Demo {
     }
 
     private void datesDemo() {
-        System.out.println("-------------------- dates demo --------------------");
+        System.out.println("\n-------------------- dates demo --------------------");
         LocalDate localDate = LocalDate.of(2022, 12, 03);
         System.out.println(Dates.dd_MM_yyyy.format(localDate));
         System.out.println(Dates.dd_MMMM_yyyy.format(localDate));
@@ -424,7 +424,7 @@ public class Demo {
     }
 
     private void timesDemo() {
-        System.out.println("-------------------- times demo --------------------");
+        System.out.println("\n-------------------- times demo --------------------");
         LocalTime localTime = LocalTime.now();
         System.out.println(Times.HH_mm_ss_SSSS.format(localTime));
         System.out.println(Times.HH_mm.format(localTime));
@@ -433,14 +433,14 @@ public class Demo {
     }
 
     private void dateTimesDemo() {
-        System.out.println("-------------------- date times demo --------------------");
+        System.out.println("\n-------------------- date times demo --------------------");
         ZonedDateTime zonedDateTime = ZonedDateTime.now();
         System.out.println(DateTimes.toEpoch(zonedDateTime));
         System.out.println(DateTimes.dd_MM_yyyy_HH_mm_ss_SSSS.format(zonedDateTime));
     }
 
     private void stateMachineDemo() {
-        System.out.println("-------------------- state machine demo --------------------");
+        System.out.println("\n-------------------- state machine demo --------------------");
         enum MyState implements State {
             // Available states
             IDLE("IDLE"),
@@ -506,7 +506,7 @@ public class Demo {
     }
 
     private void evtBusDemo() {
-        System.out.println("-------------------- evtbus demo --------------------");
+        System.out.println("\n-------------------- evtbus demo --------------------");
         class MyTopic implements Topic {
             private final String id;
             private final String name;
@@ -682,9 +682,9 @@ public class Demo {
     }
 
     private void helperDemo() {
-        System.out.println("-------------------- helper demo --------------------");
+        System.out.println("\n-------------------- helper demo --------------------");
         SystemSummary systemSummary = Helper.getSystemSummary();
-        System.out.println(systemSummary);
+        System.out.println(systemSummary.toBeautifiedString());
     }
 
     public static void main(String[] args) {

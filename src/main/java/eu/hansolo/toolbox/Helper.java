@@ -77,7 +77,9 @@ import static eu.hansolo.toolbox.Constants.CURLY_BRACKET_OPEN;
 import static eu.hansolo.toolbox.Constants.EPSILON;
 import static eu.hansolo.toolbox.Constants.FLOAT_PATTERN;
 import static eu.hansolo.toolbox.Constants.HEX_PATTERN;
+import static eu.hansolo.toolbox.Constants.INDENT;
 import static eu.hansolo.toolbox.Constants.INT_PATTERN;
+import static eu.hansolo.toolbox.Constants.NEW_LINE;
 import static eu.hansolo.toolbox.Constants.QUOTES;
 import static eu.hansolo.toolbox.Constants.QUOTES_COLON;
 import static eu.hansolo.toolbox.Constants.SQUARE_BRACKET_CLOSE;
@@ -105,12 +107,49 @@ public class Helper {
     public record ClassLoadingInfo(long totalLoadedClassCount, int loadedClassCount, long unloadedClassCount) {}
     public record HeapInfo(MemoryUsage heapMemoryUsage, MemoryUsage noneHeapMemoryUsage) {}
     public record MemInfo(long totalMemory, long freeMemory, long maxMemory) {}
-    public record SystemSummary(Architecture architecture, int availableProcessors, int availableThreads, MemInfo memInfo, HeapInfo heapInfo, List<RootInfo> rootInfos, OperatingSystem operatingSystem, OperatingSystemInfo operatingSystemInfo, OperatingMode operatingMode, JvmInfo jvmInfo) {
+    public record SystemSummary(Architecture architecture, int logicalCores, int physicalCores, MemInfo memInfo, HeapInfo heapInfo, List<RootInfo> rootInfos, OperatingSystem operatingSystem, OperatingSystemInfo operatingSystemInfo, OperatingMode operatingMode, JvmInfo jvmInfo) {
+        public String toBeautifiedString() {
+            StringBuilder msgBuilder = new StringBuilder().append(CURLY_BRACKET_OPEN).append(NEW_LINE)
+                                                          .append(INDENT).append(QUOTES).append("architecture").append(QUOTES_COLON).append(QUOTES).append(architecture.name()).append(QUOTES).append(COMMA).append(NEW_LINE)
+                                                          .append(INDENT).append(QUOTES).append("logical_cores").append(QUOTES_COLON).append(logicalCores).append(COMMA).append(NEW_LINE)
+                                                          .append(INDENT).append(QUOTES).append("physical_cores").append(QUOTES_COLON).append(physicalCores).append(COMMA).append(NEW_LINE)
+                                                          .append(INDENT).append(QUOTES).append("total_memory").append(QUOTES_COLON).append(memInfo.totalMemory()).append(COMMA).append(NEW_LINE)
+                                                          .append(INDENT).append(QUOTES).append("free_memory").append(QUOTES_COLON).append(memInfo.freeMemory()).append(COMMA).append(NEW_LINE)
+                                                          .append(INDENT).append(QUOTES).append("max_memory").append(QUOTES_COLON).append(memInfo.maxMemory()).append(COMMA).append(NEW_LINE)
+                                                          .append(INDENT).append(QUOTES).append("heap_max").append(QUOTES_COLON).append(heapInfo.heapMemoryUsage.getMax()).append(COMMA).append(NEW_LINE)
+                                                          .append(INDENT).append(QUOTES).append("heap_committed").append(QUOTES_COLON).append(heapInfo.heapMemoryUsage.getCommitted()).append(COMMA).append(NEW_LINE)
+                                                          .append(INDENT).append(QUOTES).append("heap_used").append(QUOTES_COLON).append(heapInfo.heapMemoryUsage.getUsed()).append(COMMA).append(NEW_LINE)
+                                                          .append(INDENT).append(QUOTES).append("non_heap_max").append(QUOTES_COLON).append(heapInfo.noneHeapMemoryUsage.getMax()).append(COMMA).append(NEW_LINE)
+                                                          .append(INDENT).append(QUOTES).append("non_heap_committed").append(QUOTES_COLON).append(heapInfo.noneHeapMemoryUsage.getCommitted()).append(COMMA).append(NEW_LINE)
+                                                          .append(INDENT).append(QUOTES).append("non_heap_used").append(QUOTES_COLON).append(heapInfo.noneHeapMemoryUsage.getUsed()).append(COMMA).append(NEW_LINE)
+                                                          .append(INDENT).append(QUOTES).append("root_infos").append(QUOTES_COLON).append(SQUARE_BRACKET_OPEN).append(NEW_LINE);
+            rootInfos.forEach(rootInfo ->
+                              msgBuilder.append(INDENT).append(INDENT).append(CURLY_BRACKET_OPEN).append(NEW_LINE)
+                                        .append(INDENT).append(INDENT).append(INDENT).append(QUOTES).append("absolute_path").append(QUOTES_COLON).append(QUOTES).append(rootInfo.absolutePath()).append(QUOTES).append(COMMA).append(NEW_LINE)
+                                        .append(INDENT).append(INDENT).append(INDENT).append(QUOTES).append("total_space").append(QUOTES_COLON).append(rootInfo.totalSpace()).append(COMMA).append(NEW_LINE)
+                                        .append(INDENT).append(INDENT).append(INDENT).append(QUOTES).append("free_space").append(QUOTES_COLON).append(rootInfo.freeSpace()).append(COMMA).append(NEW_LINE)
+                                        .append(INDENT).append(INDENT).append(INDENT).append(QUOTES).append("usable_space").append(QUOTES_COLON).append(rootInfo.usableSpace()).append(NEW_LINE)
+                                        .append(INDENT).append(INDENT).append(CURLY_BRACKET_CLOSE).append(COMMA).append(NEW_LINE));
+            msgBuilder.setLength(msgBuilder.length() - 2);
+            msgBuilder.append(NEW_LINE).append(INDENT).append(SQUARE_BRACKET_CLOSE).append(COMMA).append(NEW_LINE)
+                      .append(INDENT).append(QUOTES).append("operating_system").append(QUOTES_COLON).append(QUOTES).append(operatingSystem.name()).append(QUOTES).append(COMMA).append(NEW_LINE)
+                      .append(INDENT).append(QUOTES).append("operating_system_name").append(QUOTES_COLON).append(QUOTES).append(operatingSystemInfo.operatingSystemName).append(QUOTES).append(COMMA).append(NEW_LINE)
+                      .append(INDENT).append(QUOTES).append("operating_system_version").append(QUOTES_COLON).append(QUOTES).append(operatingSystemInfo.operatingSystemVersion()).append(QUOTES).append(COMMA).append(NEW_LINE)
+                      .append(INDENT).append(QUOTES).append("operating_mode").append(QUOTES_COLON).append(QUOTES).append(operatingMode.name()).append(QUOTES).append(COMMA).append(NEW_LINE)
+                      .append(INDENT).append(QUOTES).append("vm_name").append(QUOTES_COLON).append(QUOTES).append(jvmInfo.vmName()).append(QUOTES).append(COMMA).append(NEW_LINE)
+                      .append(INDENT).append(QUOTES).append("vm_vendor").append(QUOTES_COLON).append(QUOTES).append(jvmInfo.vmVendor()).append(QUOTES).append(COMMA).append(NEW_LINE)
+                      .append(INDENT).append(QUOTES).append("vm_version").append(QUOTES_COLON).append(QUOTES).append(jvmInfo.vmVersion()).append(QUOTES).append(COMMA).append(NEW_LINE)
+                      .append(INDENT).append(QUOTES).append("spec_name").append(QUOTES_COLON).append(QUOTES).append(jvmInfo.specName()).append(QUOTES).append(COMMA).append(NEW_LINE)
+                      .append(INDENT).append(QUOTES).append("spec_vendor").append(QUOTES_COLON).append(QUOTES).append(jvmInfo.specVendor()).append(QUOTES).append(COMMA).append(NEW_LINE)
+                      .append(INDENT).append(QUOTES).append("spec_version").append(QUOTES_COLON).append(QUOTES).append(jvmInfo.specVersion()).append(QUOTES).append(NEW_LINE)
+                      .append(CURLY_BRACKET_CLOSE);
+            return msgBuilder.toString();
+        }
         @Override public String toString() {
             StringBuilder msgBuilder = new StringBuilder().append(CURLY_BRACKET_OPEN)
                                                           .append(QUOTES).append("architecture").append(QUOTES_COLON).append(QUOTES).append(architecture.name()).append(QUOTES).append(COMMA)
-                                                          .append(QUOTES).append("available_processors").append(QUOTES_COLON).append(availableProcessors).append(COMMA)
-                                                          .append(QUOTES).append("available_threads").append(QUOTES_COLON).append(availableThreads).append(COMMA)
+                                                          .append(QUOTES).append("logical_cores").append(QUOTES_COLON).append(logicalCores).append(COMMA)
+                                                          .append(QUOTES).append("physical_cores").append(QUOTES_COLON).append(physicalCores).append(COMMA)
                                                           .append(QUOTES).append("total_memory").append(QUOTES_COLON).append(memInfo.totalMemory()).append(COMMA)
                                                           .append(QUOTES).append("free_memory").append(QUOTES_COLON).append(memInfo.freeMemory()).append(COMMA)
                                                           .append(QUOTES).append("max_memory").append(QUOTES_COLON).append(memInfo.maxMemory()).append(COMMA)
@@ -770,16 +809,16 @@ public class Helper {
     }
 
     public static final SystemSummary getSystemSummary() {
-        final List<RootInfo>      rootInfos           = getRootInfos();
-        final OperatingSystemInfo osInfo              = getOperatingSystemInfo();
-        final JvmInfo             jvmInfo             = getJvmInfo();
-        final HeapInfo            heapInfo            = getHeapInfo();
-        final MemInfo             memInfo             = getMemInfo();
-        final OperatingSystem     operatingSystem     = getOperatingSystem();
-        final Architecture        arc                 = getArchitecture(operatingSystem);
-        final OperatingMode       operatingMode       = getOperatingMode(operatingSystem);
-        final int                 availableProcessors = osInfo.availableProcessors();
-        final int                 availableThreads    = getPhyiscalCores();
-        return new SystemSummary(arc, availableProcessors, availableThreads, memInfo, heapInfo, rootInfos, operatingSystem, osInfo, operatingMode, jvmInfo);
+        final List<RootInfo>      rootInfos       = getRootInfos();
+        final OperatingSystemInfo osInfo          = getOperatingSystemInfo();
+        final JvmInfo             jvmInfo         = getJvmInfo();
+        final HeapInfo            heapInfo        = getHeapInfo();
+        final MemInfo             memInfo         = getMemInfo();
+        final OperatingSystem     operatingSystem = getOperatingSystem();
+        final Architecture        arc             = getArchitecture(operatingSystem);
+        final OperatingMode       operatingMode   = getOperatingMode(operatingSystem);
+        final int                 logicalCores    = osInfo.availableProcessors();
+        final int                 physicalCores   = getPhyiscalCores();
+        return new SystemSummary(arc, logicalCores, physicalCores, memInfo, heapInfo, rootInfos, operatingSystem, osInfo, operatingMode, jvmInfo);
     }
 }
