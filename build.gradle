@@ -163,17 +163,25 @@ publishing {
         maven {
             name = "OSSRH"
             url = 'https://oss.sonatype.org/service/local/staging/deploy/maven2'
-            credentials {
-                username = null == ciOssrhUsername ? ossrhUsername : ciOssrhUsername
-                password = null == ciOssrhPassword ? ossrhPassword : ciOssrhPassword
+            try {
+                credentials {
+                    username = null == ciOssrhUsername ? ossrhUsername : ciOssrhUsername
+                    password = null == ciOssrhPassword ? ossrhPassword : ciOssrhPassword
+                }
+            } catch (Exception e) {
+
             }
         }
         maven {
             name = "GitHubPackages"
             url = "https://maven.pkg.github.com/HanSolo/toolbox"
-            credentials {
-                username = null == ciGHUser  ? ghUser  : ciGHUser
-                password = null == ciGHToken ? ghToken : ciGHToken
+            try {
+                credentials {
+                    username = null == ciGHUser  ? ghUser  : ciGHUser
+                    password = null == ciGHToken ? ghToken : ciGHToken
+                }
+            } catch (Exception e) {
+
             }
         }
     }

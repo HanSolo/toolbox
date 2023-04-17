@@ -11,5 +11,7 @@ Toolbox contains different useful classes and methods e.g.
 - ObservableList<T> (wrapped CopyOnWriteArrayList<T>), ObservableMap<K,V> (wrapped ConcurrentHashMap<K,V>) and ObservableMatrix<T> (wrapped AtomicReference<T[][]) in package eu.hansolo.toolbox.observables
 - StateMachine in package eu.hansolo.toolbox.statemachine
 - EventBus in package eu.hansolo.toolbox.evtbus
+- Common date and time formats
+- System info (incl. architecture, logical and physical cores, memory info, filesystem info and jvm info)
 
 Toolbox will be used in projects like TilesFX, Medusa, Countries, Charts etc.
