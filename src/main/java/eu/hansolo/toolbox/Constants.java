@@ -92,7 +92,7 @@ public class Constants {
             switch (text) {
                 case "-linux", "linux", "Linux", "LINUX", "unix", "UNIX", "Unix", "-unix" -> { return LINUX; }
                 case "-linux-musl", "-linux_musl", "Linux-Musl", "linux-musl", "Linux_Musl", "LINUX_MUSL", "linux_musl", "alpine", "ALPINE", "Alpine", "alpine-linux", "ALPINE-LINUX", "alpine_linux", "Alpine_Linux", "ALPINE_LINUX", "Alpine Linux", "alpine linux", "ALPINE LINUX" -> { return ALPINE_LINUX; }
-                case "-free-bsd", "-free_bsd", "FreeBSD", "FREE BSD", "FREEBSD", "freebsd", "free bsd" -> { return FREE_BSD; }
+                case "freeBSD", "FreeBSD", "-free-bsd", "-free_bsd", "FREE BSD", "FREEBSD", "freebsd", "free bsd" -> { return FREE_BSD; }
                 case "-solaris", "solaris", "SOLARIS", "Solaris"                          -> { return SOLARIS; }
                 case "-qnx", "qnx", "QNX"                                                 -> { return QNX; }
                 case"-aix", "aix", "AIX"                                                  -> { return AIX; }
@@ -152,4 +152,5 @@ public class Constants {
     public static final String             INDENT                   = "  ";
     public static final String             PERCENTAGE               = "\u0025";
     public static final String             DEGREE                   = "\u00B0";
+    public static final double             EARTH_RADIUS             = 6_367_517; // m on average
 }

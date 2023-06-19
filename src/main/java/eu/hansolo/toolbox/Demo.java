@@ -23,6 +23,7 @@ import eu.hansolo.toolbox.evt.Evt;
 import eu.hansolo.toolbox.evt.EvtObserver;
 import eu.hansolo.toolbox.evt.EvtType;
 import eu.hansolo.toolbox.evt.type.ChangeEvt;
+import eu.hansolo.toolbox.evt.type.GeoLocationChangeEvt;
 import eu.hansolo.toolbox.evt.type.ListChangeEvt;
 import eu.hansolo.toolbox.evt.type.MapChangeEvt;
 import eu.hansolo.toolbox.evt.type.MatrixItemChangeEvt;
@@ -30,6 +31,8 @@ import eu.hansolo.toolbox.evt.type.PropertyChangeEvt;
 import eu.hansolo.toolbox.evtbus.EvtBus;
 import eu.hansolo.toolbox.evtbus.Subscriber;
 import eu.hansolo.toolbox.evtbus.Topic;
+import eu.hansolo.toolbox.geo.GeoLocation;
+import eu.hansolo.toolbox.geo.GeoLocationBuilder;
 import eu.hansolo.toolbox.observables.ObservableList;
 import eu.hansolo.toolbox.observables.ObservableMap;
 import eu.hansolo.toolbox.observables.ObservableMatrix;
@@ -50,12 +53,14 @@ import eu.hansolo.toolbox.tuples.Quartet;
 import eu.hansolo.toolbox.tuples.Triplet;
 import eu.hansolo.toolbox.unit.Converter;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Random;
@@ -114,6 +119,8 @@ public class Demo {
         evtBusDemo();
 
         helperDemo();
+
+        geoDemo();
     }
 
     private void propertiesDemo() {
@@ -685,6 +692,30 @@ public class Demo {
         System.out.println("\n-------------------- helper demo --------------------");
         SystemSummary systemSummary = Helper.getSystemSummary();
         System.out.println(systemSummary.toBeautifiedString());
+    }
+
+    private void geoDemo() {
+        System.out.println("\n-------------------- geo demo --------------------");
+        GeoLocation home = GeoLocationBuilder.create()
+                                             .name("Home")
+                                             .latitude(51.912781150242054)
+                                             .longitude(7.633729751419756)
+                                             .altitude(66)
+                                             .build();
+
+        GeoLocation azul = GeoLocationBuilder.create()
+                                             .name("Azul")
+                                             .latitude(37.40668261833162)
+                                             .longitude(-122.01573123930172)
+                                             .altitude(20)
+                                             .build();
+
+
+
+        home.addGeoLocationObserver(GeoLocationChangeEvt.NAME_CHANGED, e -> System.out.println("Name changed from: " + e.getOldGeoLocation().getName() + " to " + e.getGeoLocation().getName()));
+
+        System.out.println("Distance from Home to Azul: " + String.format(Locale.US, "%.2f km", (home.getDistanceTo(azul) / 1000)));
+        home.setName("Home of Han Solo");
     }
 
     public static void main(String[] args) {

@@ -21,6 +21,8 @@ package eu.hansolo.toolbox;
 import eu.hansolo.toolbox.Constants.Architecture;
 import eu.hansolo.toolbox.Constants.OperatingMode;
 import eu.hansolo.toolbox.Constants.OperatingSystem;
+import eu.hansolo.toolbox.geo.CardinalDirection;
+import eu.hansolo.toolbox.geo.GeoLocation;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -788,7 +790,7 @@ public class Helper {
         final String        specVersion   = runtimeMXBean.getSpecVersion();
         return new JvmInfo(vmName, vmVendor, vmVersion, specName, specVendor, specVersion);
     }
-
+    
     public static final CompilationInfo getCompilationInfo() {
         final CompilationMXBean compilationMXBean    = ManagementFactory.getCompilationMXBean();
         final long              totalCompilationtime = compilationMXBean.getTotalCompilationTime();
@@ -841,6 +843,48 @@ public class Helper {
         return new SystemSummary(arc, logicalCores, physicalCores, memInfo, heapInfo, rootInfos, operatingSystem, osInfo, operatingMode, jvmInfo);
     }
 
+    public static final double calcDistanceInMeter(final GeoLocation location1, final GeoLocation location2) {
+        return calcDistanceInMeter(location1.getLatitude(), location1.getLongitude(), location2.getLatitude(), location2.getLongitude());
+    }
+    public static final double calcDistanceInMeter(final double latitude1, final double longitude1, final double latitude2, final double longitude2) {
+        final double lat1Radians     = Math.toRadians(latitude1);
+        final double lat2Radians     = Math.toRadians(latitude2);
+        final double deltaLatRadians = Math.toRadians(latitude2 - latitude1);
+        final double deltaLonRadians = Math.toRadians(longitude2 - longitude1);
+
+        final double a = Math.sin(deltaLatRadians * 0.5) * Math.sin(deltaLatRadians * 0.5) + Math.cos(lat1Radians) * Math.cos(lat2Radians) * Math.sin(deltaLonRadians * 0.5) * Math.sin(deltaLonRadians * 0.5);
+        final double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+        final double distance = Constants.EARTH_RADIUS * c;
+        return distance;
+    }
+
+    public static final double calcBearingInDegree(final GeoLocation location1, final GeoLocation location2) {
+        return calcBearingInDegree(location1.getLatitude(), location1.getLongitude(), location2.getLatitude(), location2.getLongitude());
+    }
+    public static final double calcBearingInDegree(final double latitude1, final double longitude1, final double latitude2, final double longitude2) {
+        final double lat1     = Math.toRadians(latitude1);
+        final double lon1     = Math.toRadians(longitude1);
+        final double lat2     = Math.toRadians(latitude2);
+        final double lon2     = Math.toRadians(longitude2);
+        final double deltaPhi = Math.log(Math.tan(lat2 * 0.5 + Math.PI * 0.25) / Math.tan(lat1 * 0.5 + Math.PI * 0.25));
+        double deltaLon = lon2 - lon1;
+        if (Math.abs(deltaLon) > Math.PI) {
+            deltaLon = deltaLon > 0 ? -(2.0 * Math.PI - deltaLon) : (2.0 * Math.PI + deltaLon);
+        }
+        final double bearing = (Math.toDegrees(Math.atan2(deltaLon, deltaPhi)) + 360.0) % 360.0;
+        return bearing;
+    }
+
+    public static final CardinalDirection getCardinalDirectionFromBearing(final double brng) {
+        double bearing = brng % 360.0;
+        for (CardinalDirection cardinalDirection : CardinalDirection.getValues()) {
+            if (Double.compare(bearing, cardinalDirection.from) >= 0 && Double.compare(bearing, cardinalDirection.to) < 0) {
+                return cardinalDirection;
+            }
+        }
+        return CardinalDirection.NOT_FOUND;
+    }
 
     // private methods needed to figure out physical number of cores
     private static Integer readFromProc() {
