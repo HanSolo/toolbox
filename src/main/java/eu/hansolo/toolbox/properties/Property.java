@@ -19,6 +19,7 @@
 package eu.hansolo.toolbox.properties;
 
 
+import eu.hansolo.toolbox.evt.type.InvalidationEvt;
 import eu.hansolo.toolbox.evt.type.PropertyChangeEvt;
 
 
@@ -45,21 +46,27 @@ public abstract class Property<T extends Object> extends ReadOnlyProperty<T> {
 
 
     // ******************** Methods *******************************************
+    public void set(final T value) { setValue(value); }
     public void setValue(final T value) {
         if (bound && !bidirectional) { throw new IllegalArgumentException("A bound value cannot be set."); }
         setValue(value, null);
     }
-    public void set(final T value) { setValue(value); }
     protected void setValue(final T value, final Property<T> property) {
-        willChange(this.value, value);
-        final T oldValue = this.value;
-        this.value = value;
-        if (null == property && null != this.propertyToUpdate) {
-            this.propertyToUpdate.setValue(value, this);
+        if (null != observers && !observers.isEmpty() && !value.equals(getValue())) {
+            willChange(this.value, value);
+            final T oldValue = this.value;
+            this.value = value;
+            if (null == property && null != this.propertyToUpdate) {
+                this.propertyToUpdate.setValue(value, this);
+            }
+            fireEvent(new PropertyChangeEvt(this, PropertyChangeEvt.CHANGED, oldValue, this.value));
+            didChange(oldValue, this.value);
         }
-        fireEvent(new PropertyChangeEvt(this, PropertyChangeEvt.CHANGED, oldValue, this.value));
-        didChange(oldValue, this.value);
         invalidated();
+    }
+
+    @Override public void invalidated() {
+        fireEvent(new InvalidationEvt(this, InvalidationEvt.INVALIDATED));
     }
 
     public void unset() { setValue(getInitialValue()); }

@@ -19,6 +19,7 @@
 package eu.hansolo.toolbox.properties;
 
 
+import eu.hansolo.toolbox.evt.type.InvalidationEvt;
 import eu.hansolo.toolbox.evt.type.PropertyChangeEvt;
 
 
@@ -45,21 +46,27 @@ public class ByteProperty extends ReadOnlyByteProperty {
 
 
     // ******************** Methods *******************************************
+    public void set(final byte value) { setValue(value); }
     public void setValue(final Byte value) {
         if (bound && !bidirectional) { throw new IllegalArgumentException("A bound value cannot be set."); }
         setValue(value, null);
     }
-    public void set(final byte value) { setValue(value); }
     protected void setValue(final Byte value, final ByteProperty property) {
-        willChange(this.value, value);
-        final Byte oldValue = this.value;
-        this.value = value;
-        if (null == property && null != this.propertyToUpdate) {
-            this.propertyToUpdate.setValue(value, this);
+        if (null != observers && !observers.isEmpty() && !value.equals(getValue())) {
+            willChange(this.value, value);
+            final Byte oldValue = this.value;
+            this.value = value;
+            if (null == property && null != this.propertyToUpdate) {
+                this.propertyToUpdate.setValue(value, this);
+            }
+            fireEvent(new PropertyChangeEvt(this, PropertyChangeEvt.CHANGED, oldValue, this.value));
+            didChange(oldValue, this.value);
         }
-        fireEvent(new PropertyChangeEvt(this, PropertyChangeEvt.CHANGED, oldValue, this.value));
-        didChange(oldValue, this.value);
         invalidated();
+    }
+
+    @Override public void invalidated() {
+        fireEvent(new InvalidationEvt(this, InvalidationEvt.INVALIDATED));
     }
 
     public void unset() { setValue(getInitialValue()); }

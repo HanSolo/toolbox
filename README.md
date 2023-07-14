@@ -12,6 +12,7 @@ Toolbox contains different useful classes and methods e.g.
 - StateMachine in package eu.hansolo.toolbox.statemachine
 - EventBus in package eu.hansolo.toolbox.evtbus
 - Common date and time formats
+- GeoLocation to store lat/lon coordinates and do simple calculations
 - System info (incl. architecture, logical and physical cores, memory info, filesystem info and jvm info)
 
 Toolbox will be used in projects like TilesFX, Medusa, Countries, Charts etc.

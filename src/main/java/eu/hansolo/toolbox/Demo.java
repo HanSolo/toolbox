@@ -126,17 +126,18 @@ public class Demo {
     private void propertiesDemo() {
         System.out.println("\n-------------------- properties demo --------------------");
         pojo = new PoJo();
-        pojo.valueProperty().addObserver(evt -> System.out.println("Value changed from " + evt.getOldValue() + " to " + evt.getValue()));
+        pojo.valueProperty().addObserver(evt -> System.out.println("pojo.valueProperty -> Value changed from " + evt.getOldValue() + " to " + evt.getValue()));
+        pojo.valueProperty().addInvalidationObserver(evt -> System.out.println("pojo.valueProperty might have changed"));
 
         EvtObserver<PropertyChangeEvt<Double>> doubleChangeObserver = e -> System.out.println(e.getOldValue() + " -> " + e.getValue());
 
         // Setup properties
         doubleProperty = new DoubleProperty() {
             @Override protected void willChange(final Double oldValue, final Double newValue) {
-                System.out.println("\nDoubleProperty will change from " + oldValue + " to " + newValue + "\n");
+                System.out.println("DoubleProperty will change from " + oldValue + " to " + newValue);
             }
             @Override protected void didChange(final Double oldValue, final Double newValue) {
-                System.out.println("\nDoubleProperty changed from " + oldValue + " to " + newValue + "\n");
+                System.out.println("DoubleProperty changed from " + oldValue + " to " + newValue);
             }
         };
 
@@ -174,16 +175,28 @@ public class Demo {
         // Set values
         pojo.setDoubleValue(7);
 
+        System.out.println("\npojo.setValue(7)");
+        pojo.setValue(7);
+
+        System.out.println("\npojo.setValue(7)");
+        pojo.setValue(7);
+
+        System.out.println("\npojo.setValue(5)");
         pojo.setValue(5);
 
+        System.out.println("\npojo.valueProperty().set(8)");
         pojo.valueProperty().set(8);
 
+        System.out.println("\ndoubleProperty.set(20)");
         doubleProperty.set(20);
 
+        System.out.println("\nobjectProperty.set(Hallo)");
         objectProperty.set(new String("Hallo"));
 
+        System.out.println("\nobjectProperty.set(Test)");
         objectProperty.set(new String("Test"));
 
+        System.out.println("\nobjectProperty.set(Bla)");
         objectProperty.set("Bla");
 
 
@@ -752,10 +765,10 @@ public class Demo {
             if (null == value) {
                 value = new DoubleProperty(_value) {
                     @Override protected void willChange(final Double oldValue, final Double newValue) {
-                        System.out.println("\nValue will change from " + oldValue + " to " + newValue + "\n");
+                        System.out.println("Value will change from " + oldValue + " to " + newValue);
                     }
                     @Override protected void didChange(final Double oldValue, final Double newValue) {
-                        System.out.println("\nValue changed from " + oldValue + " to " + newValue + "\n");
+                        System.out.println("Value changed from " + oldValue + " to " + newValue);
                     }
                 };
             }

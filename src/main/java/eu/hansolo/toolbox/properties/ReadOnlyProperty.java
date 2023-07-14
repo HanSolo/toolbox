@@ -19,14 +19,17 @@
 package eu.hansolo.toolbox.properties;
 
 import eu.hansolo.toolbox.evt.EvtObserver;
+import eu.hansolo.toolbox.evt.type.InvalidationEvt;
 import eu.hansolo.toolbox.evt.type.PropertyChangeEvt;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 
 public abstract class ReadOnlyProperty<T extends Object> {
     protected CopyOnWriteArrayList<EvtObserver<PropertyChangeEvt<T>>> observers;
+    protected CopyOnWriteArrayList<EvtObserver<InvalidationEvt<T>>>   invalidationObservers;
     protected Object                                                  bean;
     protected String                                                  name;
     protected T                                                       initialValue;
@@ -81,6 +84,10 @@ public abstract class ReadOnlyProperty<T extends Object> {
         this.bidirectional    = false;
     }
 
+    public List<EvtObserver<PropertyChangeEvt<T>>> getObservers() { return observers; }
+
+    public List<EvtObserver<InvalidationEvt<T>>> getInvalidationObservers() { return invalidationObservers; }
+
 
     // ******************** Event Handling ************************************
     public void addOnChange(final EvtObserver<PropertyChangeEvt<T>> observer) {
@@ -104,5 +111,29 @@ public abstract class ReadOnlyProperty<T extends Object> {
     public void fireEvent(final PropertyChangeEvt<T> evt) {
         if (null == observers || null == evt) { return; }
         observers.forEach(observer -> observer.handle(evt));
+    }
+
+
+    public void addOnInvalidation(final EvtObserver<InvalidationEvt<T>> observer) {
+        addInvalidationObserver(observer);
+    }
+    public void addInvalidationObserver(final EvtObserver<InvalidationEvt<T>> observer) {
+        if (null == observer) { return; }
+        if (null == invalidationObservers) { invalidationObservers = new CopyOnWriteArrayList<>(); }
+        if (invalidationObservers.contains(observer)) { return; }
+        invalidationObservers.add(observer);
+    }
+    public void removeInvalidationObserver(final EvtObserver<InvalidationEvt<T>> observer) {
+        if (null == invalidationObservers || null == observer) { return; }
+        if (invalidationObservers.contains(observer)) { invalidationObservers.remove(observer); }
+    }
+    public void removeAllInvalidationObservers() {
+        if (null == invalidationObservers) { return; }
+        invalidationObservers.clear();
+    }
+
+    public void fireEvent(final InvalidationEvt evt) {
+        if (null == invalidationObservers || null == evt) { return; }
+        invalidationObservers.forEach(observer -> observer.handle(evt));
     }
 }
