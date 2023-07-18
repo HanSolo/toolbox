@@ -51,6 +51,6 @@ public class Statistics {
     public static final double percentile(List<Double> entries, double percentile) {
         Collections.sort(entries);
         final int index = (int) Math.ceil(percentile / 100.0 * entries.size());
-        return entries.get(index-1);
+        return entries.get(index - 1);
     }
 }
