@@ -18,6 +18,7 @@
 
 package eu.hansolo.toolbox.observables;
 
+import eu.hansolo.toolbox.evt.Evt;
 import eu.hansolo.toolbox.evt.EvtObserver;
 import eu.hansolo.toolbox.evt.EvtType;
 import eu.hansolo.toolbox.evt.type.ListChangeEvt;
@@ -40,22 +41,19 @@ import java.util.stream.Collectors;
 
 
 public class ObservableList<T> implements List<T>, RandomAccess, Cloneable {
-    private final CopyOnWriteArrayList<T>                           list;
-    private       Map<EvtType, List<EvtObserver<ListChangeEvt<T>>>> observers;
+    private final CopyOnWriteArrayList<T>                                          list;
+    private       Map<EvtType<? extends Evt>, List<EvtObserver<ListChangeEvt<T>>>> observers;
 
 
     // ******************** Constructors **************************************
     public ObservableList() {
-        this.list      = new CopyOnWriteArrayList<>();
-        this.observers = new ConcurrentHashMap<>();
+        this.list = new CopyOnWriteArrayList<>();
     }
     public ObservableList(final Collection<? extends T> collection) {
-        this.list      = new CopyOnWriteArrayList<>(collection);
-        this.observers = new ConcurrentHashMap<>();
+        this.list = new CopyOnWriteArrayList<>(collection);
     }
     public ObservableList(final T[] array) {
-        this.list      = new CopyOnWriteArrayList<>(array);
-        this.observers = new ConcurrentHashMap<>();
+        this.list = new CopyOnWriteArrayList<>(array);
     }
 
 
@@ -213,25 +211,35 @@ public class ObservableList<T> implements List<T>, RandomAccess, Cloneable {
 
 
     // ******************** Event Handling ************************************
-    public void addListChangeObserver(final EvtType type, final EvtObserver<ListChangeEvt<T>> observer) {
+    public void addListChangeObserver(final EvtType<? extends Evt> type, final EvtObserver<ListChangeEvt<T>> observer) {
+        if (null == type || null == observer) { return; }
+        if (null == observers) { observers = new ConcurrentHashMap<>(); }
         if (!observers.containsKey(type)) { observers.put(type, new CopyOnWriteArrayList<>()); }
         if (observers.get(type).contains(observer)) { return; }
         observers.get(type).add(observer);
     }
-    public void removeListChangeObserver(final EvtType type, final EvtObserver<ListChangeEvt<T>> observer) {
+    public void removeListChangeObserver(final EvtType<? extends Evt> type, final EvtObserver<ListChangeEvt<T>> observer) {
+        if (null == observers || null == type || null == observer) { return; }
         if (observers.containsKey(type)) {
             if (observers.get(type).contains(observer)) {
                 observers.get(type).remove(observer);
             }
         }
     }
-    public void removeAllListChangeObservers() { observers.clear(); }
+    public void removeAllListChangeObservers() {
+        if (null == observers) { return; }
+        observers.clear();
+    }
 
     public void fireListChangeEvt(final ListChangeEvt<T> evt) {
-        final EvtType type = evt.getEvtType();
-        observers.entrySet().stream().filter(entry -> entry.getKey().equals(ListChangeEvt.ANY)).forEach(entry -> entry.getValue().forEach(observer -> observer.handle(evt)));
-        if (observers.containsKey(type) && !type.equals(ListChangeEvt.ANY)) {
-            observers.get(type).forEach(observer -> observer.handle(evt));
-        }
+        if (null == observers) { return; }
+        // Call all observers that have subscribed to specific event types
+        observers.entrySet().stream()
+                            .filter(entry -> !entry.getKey().equals(ListChangeEvt.ANY))
+                            .forEach(entry -> entry.getValue().forEach(observer -> observer.handle(evt)));
+        // Call all observers that have subscribed to ANY event type
+        observers.entrySet().stream()
+                            .filter(entry -> entry.getKey().equals(ListChangeEvt.ANY))
+                            .forEach(entry -> entry.getValue().forEach(observer -> observer.handle(evt)));
     }
 }

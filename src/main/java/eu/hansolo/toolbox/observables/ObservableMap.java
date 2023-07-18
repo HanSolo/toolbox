@@ -18,6 +18,7 @@
 
 package eu.hansolo.toolbox.observables;
 
+import eu.hansolo.toolbox.evt.Evt;
 import eu.hansolo.toolbox.evt.EvtObserver;
 import eu.hansolo.toolbox.evt.EvtType;
 import eu.hansolo.toolbox.evt.type.MapChangeEvt;
@@ -47,10 +48,10 @@ import java.util.function.ToLongFunction;
 
 
 public class ObservableMap<K,V> implements Map<K,V>, Cloneable {
-    private static final int                                                DEFAULT_CAPACITY    = 16;
-    private static final float                                              DEFAULT_LOAD_FACTOR = 0.75f;
-    private        final ConcurrentHashMap<K,V>                             map;
-    private              Map<EvtType, List<EvtObserver<MapChangeEvt<K,V>>>> observers;
+    private static final int                                                               DEFAULT_CAPACITY    = 16;
+    private static final float                                                             DEFAULT_LOAD_FACTOR = 0.75f;
+    private        final ConcurrentHashMap<K,V>                                            map;
+    private              Map<EvtType<? extends Evt>, List<EvtObserver<MapChangeEvt<K,V>>>> observers;
 
 
     // ******************** Constructors **************************************
@@ -61,16 +62,13 @@ public class ObservableMap<K,V> implements Map<K,V>, Cloneable {
         this(capacity, DEFAULT_LOAD_FACTOR);
     }
     public ObservableMap(final int capacity, final float loadFactor) {
-        this.map       = new ConcurrentHashMap<>(capacity, loadFactor);
-        this.observers = new ConcurrentHashMap<>();
+        this.map = new ConcurrentHashMap<>(capacity, loadFactor);
     }
     public ObservableMap(final int capacity, final float loadFactor, final int concurrencyLevel) {
-        this.map       = new ConcurrentHashMap<>(capacity, loadFactor, concurrencyLevel);
-        this.observers = new ConcurrentHashMap<>();
+        this.map = new ConcurrentHashMap<>(capacity, loadFactor, concurrencyLevel);
     }
     public ObservableMap(final Map<? extends K, ? extends V> map) {
-        this.map       = new ConcurrentHashMap<>(map);
-        this.observers = new ConcurrentHashMap<>();
+        this.map = new ConcurrentHashMap<>(map);
     }
 
 
@@ -317,25 +315,35 @@ public class ObservableMap<K,V> implements Map<K,V>, Cloneable {
 
 
     // ******************** Event Handling ************************************
-    public void addMapChangeObserver(final EvtType type, final EvtObserver<MapChangeEvt<K,V>> observer) {
+    public void addMapChangeObserver(final EvtType<? extends Evt> type, final EvtObserver<MapChangeEvt<K,V>> observer) {
+        if (null == type || null == observer) { return; }
+        if (null == observers) { this.observers = new ConcurrentHashMap<>(); }
         if (!observers.containsKey(type)) { observers.put(type, new CopyOnWriteArrayList<>()); }
         if (observers.get(type).contains(observer)) { return; }
         observers.get(type).add(observer);
     }
-    public void removeMapChangeObserver(final EvtType type, final EvtObserver<MapChangeEvt<K,V>> observer) {
+    public void removeMapChangeObserver(final EvtType<? extends Evt> type, final EvtObserver<MapChangeEvt<K,V>> observer) {
+        if (null == observers || null == type || null == observer) { return; }
         if (observers.containsKey(type)) {
             if (observers.get(type).contains(observer)) {
                 observers.get(type).remove(observer);
             }
         }
     }
-    public void removeAllMapChangeObservers() { observers.clear(); }
+    public void removeAllMapChangeObservers() {
+        if (null == observers) { return; }
+        observers.clear();
+    }
 
     public void fireMapChangeEvt(final MapChangeEvt<K,V> evt) {
-        final EvtType type = evt.getEvtType();
-        observers.entrySet().stream().filter(entry -> entry.getKey().equals(MapChangeEvt.ANY)).forEach(entry -> entry.getValue().forEach(observer -> observer.handle(evt)));
-        if (observers.containsKey(type) && !type.equals(MapChangeEvt.ANY)) {
-            observers.get(type).forEach(observer -> observer.handle(evt));
-        }
+        if (null == observers) { return; }
+        // Call all observers that have subscribed to specific event types
+        observers.entrySet().stream()
+                            .filter(entry -> !entry.getKey().equals(MapChangeEvt.ANY))
+                            .forEach(entry -> entry.getValue().forEach(observer -> observer.handle(evt)));
+        // Call all observers that have subscribed to ANY event type
+        observers.entrySet().stream()
+                            .filter(entry -> entry.getKey().equals(MapChangeEvt.ANY))
+                            .forEach(entry -> entry.getValue().forEach(observer -> observer.handle(evt)));
     }
 }

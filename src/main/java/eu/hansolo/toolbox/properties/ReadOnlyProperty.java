@@ -100,7 +100,7 @@ public abstract class ReadOnlyProperty<T extends Object> {
         observers.add(observer);
     }
     public void removeObserver(final EvtObserver<PropertyChangeEvt<T>> observer) {
-        if (null == observers || null == observer) { return; }
+        if (null == observer || null == observers) { return; }
         if (observers.contains(observer)) { observers.remove(observer); }
     }
     public void removeAllObservers() {
@@ -109,14 +109,12 @@ public abstract class ReadOnlyProperty<T extends Object> {
     }
 
     public void fireEvent(final PropertyChangeEvt<T> evt) {
-        if (null == observers || null == evt) { return; }
+        if (null == evt || null == observers) { return; }
         observers.forEach(observer -> observer.handle(evt));
     }
 
 
-    public void addOnInvalidation(final EvtObserver<InvalidationEvt<T>> observer) {
-        addInvalidationObserver(observer);
-    }
+    public void addOnInvalidation(final EvtObserver<InvalidationEvt<T>> observer) { addInvalidationObserver(observer); }
     public void addInvalidationObserver(final EvtObserver<InvalidationEvt<T>> observer) {
         if (null == observer) { return; }
         if (null == invalidationObservers) { invalidationObservers = new CopyOnWriteArrayList<>(); }
@@ -133,7 +131,7 @@ public abstract class ReadOnlyProperty<T extends Object> {
     }
 
     public void fireEvent(final InvalidationEvt evt) {
-        if (null == invalidationObservers || null == evt) { return; }
+        if (null == evt || null == invalidationObservers) { return; }
         invalidationObservers.forEach(observer -> observer.handle(evt));
     }
 }

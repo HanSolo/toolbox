@@ -18,12 +18,12 @@
 
 package eu.hansolo.toolbox.observables;
 
+import eu.hansolo.toolbox.evt.Evt;
 import eu.hansolo.toolbox.evt.EvtObserver;
 import eu.hansolo.toolbox.evt.EvtType;
 import eu.hansolo.toolbox.evt.type.MatrixChangeEvt;
 import eu.hansolo.toolbox.evt.type.MatrixItemChangeEvt;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -38,15 +38,15 @@ import java.util.stream.Stream;
 
 
 public class ObservableMatrix<T> {
-    private final    Class<T>                                                type;
-    private          Map<EvtType, List<EvtObserver<MatrixChangeEvt<T>>>>     matrixObservers;
-    private          Map<EvtType, List<EvtObserver<MatrixItemChangeEvt<T>>>> itemObservers;
-    private          AtomicReference<T>[][]                                  matrix;
-    private volatile int                                                     cols;
-    private volatile int                                                     rows;
-    private          boolean                                                 colsMirrored;
-    private          boolean                                                 rowsMirrored;
-    private          boolean                                                 resizeMatrixWhenInnerRowOrColIsRemoved;
+    private final    Class<T>                                                               type;
+    private          Map<EvtType<? extends Evt>, List<EvtObserver<MatrixChangeEvt<T>>>>     matrixObservers;
+    private          Map<EvtType<? extends Evt>, List<EvtObserver<MatrixItemChangeEvt<T>>>> itemObservers;
+    private          AtomicReference<T>[][]                                                 matrix;
+    private volatile int                                                                    cols;
+    private volatile int                                                                    rows;
+    private          boolean                                                                colsMirrored;
+    private          boolean                                                                rowsMirrored;
+    private          boolean                                                                resizeMatrixWhenInnerRowOrColIsRemoved;
 
 
     // ******************** Constructors **************************************
@@ -55,8 +55,6 @@ public class ObservableMatrix<T> {
     }
     public ObservableMatrix(Class<T> type, final int cols, final int rows, final boolean resizeMatrixWhenInnerRowOrColIsRemoved) {
         this.type                                   = type;
-        this.matrixObservers                        = new ConcurrentHashMap<>();
-        this.itemObservers                          = new ConcurrentHashMap<>();
         this.matrix                                 = createArray(type, cols, rows);
         this.cols                                   = cols;
         this.rows                                   = rows;
@@ -66,8 +64,6 @@ public class ObservableMatrix<T> {
     }
     public ObservableMatrix(final ObservableMatrix<T> copyFromMatrix) {
         this.type                                   = copyFromMatrix.getType();
-        this.matrixObservers                        = new ConcurrentHashMap<>();
-        this.itemObservers                          = new ConcurrentHashMap<>();
         this.matrix                                 = createArray(type, copyFromMatrix.cols, copyFromMatrix.rows);
         this.cols                                   = copyFromMatrix.cols;
         this.rows                                   = copyFromMatrix.rows;
@@ -739,49 +735,68 @@ public class ObservableMatrix<T> {
 
     // ******************** Event Handling ************************************
     // Matrix events
-    public void addMatrixChangeObserver(final EvtType type, final EvtObserver<MatrixChangeEvt<T>> observer) {
+    public void addMatrixChangeObserver(final EvtType<? extends Evt> type, final EvtObserver<MatrixChangeEvt<T>> observer) {
+        if (null == type || null == observer) { return; }
+        if (null == matrixObservers) { matrixObservers = new ConcurrentHashMap<>(); }
         if (!matrixObservers.containsKey(type)) { matrixObservers.put(type, new CopyOnWriteArrayList<>()); }
         if (matrixObservers.get(type).contains(observer)) { return; }
         matrixObservers.get(type).add(observer);
     }
-    public void removeMatrixChangeObserver(final EvtType type, final EvtObserver<MatrixChangeEvt<T>> observer) {
+    public void removeMatrixChangeObserver(final EvtType<? extends Evt> type, final EvtObserver<MatrixChangeEvt<T>> observer) {
+        if (null == matrixObservers || null == type || null == observer) { return; }
         if (matrixObservers.containsKey(type)) {
             if (matrixObservers.get(type).contains(observer)) {
                 matrixObservers.get(type).remove(observer);
             }
         }
     }
-    public void removeAllMatrixChangeObservers() { matrixObservers.clear(); }
+    public void removeAllMatrixChangeObservers() {
+        if (null == matrixObservers) { return; }
+        matrixObservers.clear();
+    }
 
     public void fireMatrixChangeEvt(final MatrixChangeEvt<T> evt) {
-        final EvtType type = evt.getEvtType();
-        matrixObservers.entrySet().stream().filter(entry -> entry.getKey().equals(MatrixChangeEvt.ANY)).forEach(entry -> entry.getValue().forEach(observer -> observer.handle(evt)));
-        if (matrixObservers.containsKey(type) && !type.equals(MatrixChangeEvt.ANY)) {
-            matrixObservers.get(type).forEach(observer -> observer.handle(evt));
-        }
+        if (null == matrixObservers) { return; }
+        // Call all observers that have subscribed to specific event types
+        matrixObservers.entrySet().stream()
+                                  .filter(entry -> !entry.getKey().equals(MatrixChangeEvt.ANY))
+                                  .forEach(entry -> entry.getValue().forEach(observer -> observer.handle(evt)));
+        // Call all observers that have subscribed to ANY event type
+        matrixObservers.entrySet().stream()
+                                  .filter(entry -> entry.getKey().equals(MatrixChangeEvt.ANY))
+                                  .forEach(entry -> entry.getValue().forEach(observer -> observer.handle(evt)));
     }
 
     // Matrix item events
-    public void addMatrixItemChangeObserver(final EvtType type, final EvtObserver<MatrixItemChangeEvt<T>> observer) {
+    public void addMatrixItemChangeObserver(final EvtType<? extends Evt> type, final EvtObserver<MatrixItemChangeEvt<T>> observer) {
+        if (null == type || null == observer) { return; }
+        if (null == itemObservers) { itemObservers = new ConcurrentHashMap<>(); }
         if (!itemObservers.containsKey(type)) { itemObservers.put(type, new CopyOnWriteArrayList<>()); }
         if (itemObservers.get(type).contains(observer)) { return; }
         itemObservers.get(type).add(observer);
     }
-    public void removeMatrixItemChangeObserver(final EvtType type, final EvtObserver<MatrixItemChangeEvt<T>> observer) {
+    public void removeMatrixItemChangeObserver(final EvtType<? extends Evt> type, final EvtObserver<MatrixItemChangeEvt<T>> observer) {
+        if (null == type || null == observer || null == itemObservers) { return; }
         if (itemObservers.containsKey(type)) {
             if (itemObservers.get(type).contains(observer)) {
                 itemObservers.get(type).remove(observer);
             }
         }
     }
-    public void removeAllMatrixItemChangeObservers() { itemObservers.clear(); }
+    public void removeAllMatrixItemChangeObservers() {
+        if (null == itemObservers) { return; }
+        itemObservers.clear();
+    }
 
     public void fireMatrixItemChangeEvt(final MatrixItemChangeEvt<T> evt) {
-        final EvtType type = evt.getEvtType();
-        itemObservers.entrySet().stream().filter(entry -> entry.getKey().equals(MatrixItemChangeEvt.ANY)).forEach(entry -> entry.getValue().forEach(observer -> observer.handle(evt)));
-        if (itemObservers.containsKey(type) && !type.equals(MatrixItemChangeEvt.ANY)) {
-            itemObservers.get(type).forEach(observer -> observer.handle(evt));
-        }
+        // Call all observers that have subscribed to specific event types
+        itemObservers.entrySet().stream()
+                                .filter(entry -> !entry.getKey().equals(MatrixItemChangeEvt.ANY))
+                                .forEach(entry -> entry.getValue().forEach(observer -> observer.handle(evt)));
+        // Call all observers that have subscribed to ANY event type
+        itemObservers.entrySet().stream()
+                                .filter(entry -> entry.getKey().equals(MatrixItemChangeEvt.ANY))
+                                .forEach(entry -> entry.getValue().forEach(observer -> observer.handle(evt)));
     }
 
 
