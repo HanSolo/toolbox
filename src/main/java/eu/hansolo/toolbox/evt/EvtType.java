@@ -53,9 +53,9 @@ public final class EvtType<T extends Evt> {
 
 
     // ******************** Methods *******************************************
-    public final EvtType<? super T> getSuperType() { return superType; }
+    public EvtType<? super T> getSuperType() { return superType; }
 
-    public final String getName() { return name; }
+    public String getName() { return name; }
 
     @Override public boolean equals(final Object o) {
         if (this == o) { return true; }
