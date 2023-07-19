@@ -236,7 +236,7 @@ public class ObservableList<T> implements List<T>, RandomAccess, Cloneable {
         // Call all observers that have subscribed to specific event types
         observers.entrySet().stream()
                             .filter(entry -> !entry.getKey().equals(ListChangeEvt.ANY))
-                            .filter(entry -> entry.getValue().contains(evt.getEvtType()))
+                            .filter(entry -> entry.getKey().equals(evt.getEvtType()))
                             .forEach(entry -> entry.getValue().forEach(observer -> observer.handle(evt)));
         // Call all observers that have subscribed to ANY event type
         observers.entrySet().stream()
