@@ -47,7 +47,10 @@ public class GeoTest {
         home.addGeoLocationObserver(GeoLocationChangeEvt.NAME_CHANGED, e -> System.out.println("Name changed from: " + e.getOldGeoLocation().getName() + " to " + e.getGeoLocation().getName()));
 
         System.out.println("Distance from Home to Azul: " + String.format(Locale.US, "%.2f km", (home.getDistanceTo(azul) / 1000)));
+
         home.setName("Home of Han Solo");
+        assert home.getName().equals("Home of Han Solo");
         home.setAccuracy(0.9);
+        assert home.getAccuracy() == 0.9;
     }
 }
