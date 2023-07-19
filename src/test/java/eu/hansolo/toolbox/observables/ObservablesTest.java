@@ -157,7 +157,7 @@ public class ObservablesTest {
                 integerMatrix.setItemAt(x, y, value);
             }
         }
-        assert integerMatrix.getItemAt(2, 1) != 0;
+        assert integerMatrix.getItemAt(2, 1) != null;
 
         integerMatrix.removeItemAt(0, 0);
         assert integerMatrix.getItemAt(0, 0) == null;
