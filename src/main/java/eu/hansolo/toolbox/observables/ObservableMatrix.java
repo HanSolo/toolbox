@@ -760,6 +760,7 @@ public class ObservableMatrix<T> {
         // Call all observers that have subscribed to specific event types
         matrixObservers.entrySet().stream()
                                   .filter(entry -> !entry.getKey().equals(MatrixChangeEvt.ANY))
+                                  .filter(entry -> entry.getValue().contains(evt.getEvtType()))
                                   .forEach(entry -> entry.getValue().forEach(observer -> observer.handle(evt)));
         // Call all observers that have subscribed to ANY event type
         matrixObservers.entrySet().stream()
@@ -792,6 +793,7 @@ public class ObservableMatrix<T> {
         // Call all observers that have subscribed to specific event types
         itemObservers.entrySet().stream()
                                 .filter(entry -> !entry.getKey().equals(MatrixItemChangeEvt.ANY))
+                                .filter(entry -> entry.getValue().contains(evt.getEvtType()))
                                 .forEach(entry -> entry.getValue().forEach(observer -> observer.handle(evt)));
         // Call all observers that have subscribed to ANY event type
         itemObservers.entrySet().stream()
