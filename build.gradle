@@ -43,8 +43,8 @@ dependencies {
 
 jar {
     from {
-        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-        configurations.runtimeClasspath.collect {  it.isDirectory() ? it : zipTree(it)  }
+        //duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+        //configurations.runtimeClasspath.collect {  it.isDirectory() ? it : zipTree(it)  }
     } {
         exclude "META-INF/*.SF"
         exclude "META-INF/*.DSA"
@@ -65,7 +65,7 @@ jar {
                 'Bundle-License'        : 'https://www.apache.org/licenses/LICENSE-2.0;description=Apache License Version 2.0;link=https://spdx.org/licenses/Apache-2.0.html',
                 'Bundle-Description'    : description,
                 'Bundle-SymbolicName'   : 'eu.hansolo.toolbox',
-                'Export-Package'        : 'eu.hansolo.toolbox,eu.hansolo.toolbox.properties,eu.hansolo.toolbox.evt,eu.hansolo.toolbox.evt.type,eu.hansolo.toolbox.tuples,eu.hansolo.toolbox.unit,eu.hansolo.toolbox.time',
+                'Export-Package'        : 'eu.hansolo.toolbox.evtbus, eu.hansolo.toolbox.evt.type, eu.hansolo.toolbox.evt, eu.hansolo.toolbox.geo, eu.hansolo.toolbox.observables, eu.hansolo.toolbox.properties, eu.hansolo.toolbox.statemachine, eu.hansolo.toolbox.tuples, eu.hansolo.toolbox.unit, eu.hansolo.toolbox.time, eu.hansolo.toolbox',
                 'Class-Path'            : configurations.runtimeClasspath.files.collect { it.getName() }.join(' '),
                 'Main-Class'            : 'eu.hansolo.toolbox.Demo'
         )
