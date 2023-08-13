@@ -67,7 +67,7 @@ jar {
                 'Bundle-Description'    : description,
                 'Bundle-SymbolicName'   : 'eu.hansolo.toolbox',
                 'Export-Package'        : 'eu.hansolo.toolbox.evtbus, eu.hansolo.toolbox.evt.type, eu.hansolo.toolbox.evt, eu.hansolo.toolbox.geo, eu.hansolo.toolbox.observables, eu.hansolo.toolbox.properties, eu.hansolo.toolbox.statemachine, eu.hansolo.toolbox.tuples, eu.hansolo.toolbox.unit, eu.hansolo.toolbox.time, eu.hansolo.toolbox',
-                'Class-Path'            : configurations.runtimeClasspath.files.collect { it.getName() }.join(' '),
+                'Class-Path'            : "${project.name}-${project.version}.jar",
                 'Main-Class'            : 'eu.hansolo.toolbox.Demo'
         )
     }
