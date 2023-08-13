@@ -27,11 +27,6 @@ ext {
     gpgpassphrase   = System.getenv("PASSPHRASE")
 }
 
-application {
-    mainModule = 'eu.hansolo.toolbox'
-    mainClass  = 'eu.hansolo.toolbox.Demo'
-}
-
 repositories {
     mavenCentral()
 }
@@ -41,6 +36,10 @@ dependencies {
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.3'
 }
 
+application {
+    mainClass  = 'eu.hansolo.toolbox.Demo'
+    mainModule = 'eu.hansolo.toolbox'
+}
 
 jar {
     from {
@@ -68,7 +67,7 @@ jar {
                 'Bundle-SymbolicName'   : 'eu.hansolo.toolbox',
                 'Export-Package'        : 'eu.hansolo.toolbox.evtbus, eu.hansolo.toolbox.evt.type, eu.hansolo.toolbox.evt, eu.hansolo.toolbox.geo, eu.hansolo.toolbox.observables, eu.hansolo.toolbox.properties, eu.hansolo.toolbox.statemachine, eu.hansolo.toolbox.tuples, eu.hansolo.toolbox.unit, eu.hansolo.toolbox.time, eu.hansolo.toolbox',
                 'Class-Path'            : "${project.name}-${project.version}.jar",
-                'Main-Class'            : 'eu.hansolo.toolbox.Demo'
+                'Main-Class'            : application.mainClass
         )
     }
 }
