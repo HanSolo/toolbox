@@ -52,7 +52,7 @@ public class LongProperty extends ReadOnlyLongProperty {
         setValue(value, null);
     }
     protected void setValue(final Long value, final LongProperty property) {
-        if (null != observers && !observers.isEmpty() && !value.equals(getValue())) {
+        if (!value.equals(getValue())) {
             willChange(this.value, value);
             final Long oldValue = this.value;
             this.value = value;

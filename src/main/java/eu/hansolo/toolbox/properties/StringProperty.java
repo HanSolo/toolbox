@@ -52,7 +52,7 @@ public class StringProperty extends ReadOnlyStringProperty {
         setValue(value, null);
     }
     protected void setValue(final String value, final StringProperty property) {
-        if (null != observers && !observers.isEmpty() && !value.equals(getValue())) {
+        if (!value.equals(getValue())) {
             willChange(this.value, value);
             final String oldValue = this.value;
             this.value = value;

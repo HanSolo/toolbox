@@ -122,6 +122,9 @@ public class PropertiesTest {
         propertyB.set(5);
         System.out.println("\npropertyB = " + propertyB.get());
         System.out.println("propertyA = " + propertyA.get());
+        assert propertyB.get() == 5;
+        assert propertyA.get() == 5;
+
         System.out.println("\npropertyA.set(20)");
         try {
             propertyA.set(20);
@@ -137,6 +140,9 @@ public class PropertiesTest {
         System.out.println("\nProperty A: " + propertyA.get() + " is bound: " + propertyA.isBound());
         System.out.println("Property B: " + propertyB.get() + " is bound: " + propertyB.isBound());
 
+        assert propertyA.get() == 5;
+        assert propertyB.get() == 15;
+
         System.out.println("\nReadOnlyDoubleProperty: " + readOnlyDoubleProperty.getValue());
         System.out.println("DoubleProperty        : " + doubleProperty.getValue());
         System.out.println("Bind DoubleProperty -> ReadOnlyDoubleProperty");
@@ -147,6 +153,8 @@ public class PropertiesTest {
         System.out.println("Set DoubleProperty -> 13");
         doubleProperty.set(13);
         System.out.println("DoubleProperty        : " + doubleProperty.getValue());
+
+        assert doubleProperty.get() == 13;
 
 
         // Bindings bidirectional
@@ -164,22 +172,30 @@ public class PropertiesTest {
         propertyD.set(5);
         System.out.println("\npropertyC = " + propertyC.get());
         System.out.println("propertyD = " + propertyD.get());
+        assert propertyD.get() == 5;
+        assert propertyC.get() == 5;
         System.out.println("\npropertyC.set(20)");
         propertyC.set(20);
         System.out.println("\npropertyC = " + propertyC.get());
         System.out.println("propertyD = " + propertyD.get());
+        assert propertyC.get() == 20;
+        assert propertyD.get() == 20;
         System.out.println("\npropertyD.unbind()");
         propertyD.unbind();
         System.out.println("\nProperty C: " + propertyC.get() + " is bound bidirectional: " + propertyC.isBoundBidirectional());
         System.out.println("Property D: " + propertyD.get() + " is bound bidirectional: " + propertyD.isBoundBidirectional());
         System.out.println("\npropertyD.set(5)");
         propertyD.set(5);
+        assert propertyD.get() == 5;
+        assert propertyC.get() == 20;
         System.out.println("\nProperty C: " + propertyC.get() + " is bound bidirectional: " + propertyC.isBoundBidirectional());
         System.out.println("Property D: " + propertyD.get() + " is bound bidirectional: " + propertyD.isBoundBidirectional());
         System.out.println("\npropertyC.set(10)");
         propertyC.set(10);
         System.out.println("\nProperty C: " + propertyC.get() + " is bound bidirectional: " + propertyC.isBoundBidirectional());
         System.out.println("Property D: " + propertyD.get() + " is bound bidirectional: " + propertyD.isBoundBidirectional());
+        assert propertyC.get() == 10;
+        assert propertyD.get() == 5;
     }
 
     public class PoJo {

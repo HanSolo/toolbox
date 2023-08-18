@@ -52,7 +52,7 @@ public class FloatProperty extends ReadOnlyFloatProperty {
         setValue(value, null);
     }
     protected void setValue(final Float value, final FloatProperty property) {
-        if (null != observers && !observers.isEmpty() && !value.equals(getValue())) {
+        if (!value.equals(getValue())) {
             willChange(this.value, value);
             final Float oldValue = this.value;
             this.value = value;

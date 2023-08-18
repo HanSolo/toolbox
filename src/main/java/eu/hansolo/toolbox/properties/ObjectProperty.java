@@ -52,7 +52,7 @@ public class ObjectProperty<T> extends ReadOnlyObjectProperty<T> {
         setValue(value, null);
     }
     protected void setValue(final T value, final ObjectProperty<T> property) {
-        if (null != observers && !observers.isEmpty() && !value.equals(getValue())) {
+        if (!value.equals(getValue())) {
             willChange(this.value, value);
             final T oldValue = this.value;
             this.value = value;

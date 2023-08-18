@@ -52,7 +52,7 @@ public class ShortProperty extends ReadOnlyShortProperty {
         setValue(value, null);
     }
     protected void setValue(final Short value, final ShortProperty property) {
-        if (null != observers && !observers.isEmpty() && !value.equals(getValue())) {
+        if (!value.equals(getValue())) {
             willChange(this.value, value);
             final Short oldValue = this.value;
             this.value = value;

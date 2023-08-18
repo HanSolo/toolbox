@@ -63,7 +63,7 @@ jar {
                 'Implementation-Version': project.version,
                 'Bundle-Name'           : project.name,
                 'Bundle-License'        : 'https://www.apache.org/licenses/LICENSE-2.0;description=Apache License Version 2.0;link=https://spdx.org/licenses/Apache-2.0.html',
-                'Bundle-Description'    : description,
+                'Bundle-Description'    : project.description,
                 'Bundle-SymbolicName'   : 'eu.hansolo.toolbox',
                 'Export-Package'        : 'eu.hansolo.toolbox.evtbus, eu.hansolo.toolbox.evt.type, eu.hansolo.toolbox.evt, eu.hansolo.toolbox.geo, eu.hansolo.toolbox.observables, eu.hansolo.toolbox.properties, eu.hansolo.toolbox.statemachine, eu.hansolo.toolbox.tuples, eu.hansolo.toolbox.unit, eu.hansolo.toolbox.time, eu.hansolo.toolbox',
                 'Class-Path'            : "${project.name}-${project.version}.jar",

@@ -52,7 +52,7 @@ public class CharProperty extends ReadOnlyCharProperty {
         setValue(value, null);
     }
     protected void setValue(final Character value, final CharProperty property) {
-        if (null != observers && !observers.isEmpty() && !value.equals(getValue())) {
+        if (!value.equals(getValue())) {
             willChange(this.value, value);
             final Character oldValue = this.value;
             this.value = value;

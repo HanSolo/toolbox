@@ -52,7 +52,7 @@ public class DoubleProperty extends ReadOnlyDoubleProperty {
         setValue(value, null);
     }
     protected void setValue(final Double value, final DoubleProperty property) {
-        if (null != observers && !observers.isEmpty() && !value.equals(getValue())) {
+        if (!value.equals(getValue())) {
             willChange(this.value, value);
             final Double oldValue = this.value;
             this.value = value;

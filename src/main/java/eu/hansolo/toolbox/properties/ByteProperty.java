@@ -52,7 +52,7 @@ public class ByteProperty extends ReadOnlyByteProperty {
         setValue(value, null);
     }
     protected void setValue(final Byte value, final ByteProperty property) {
-        if (null != observers && !observers.isEmpty() && !value.equals(getValue())) {
+        if (!value.equals(getValue())) {
             willChange(this.value, value);
             final Byte oldValue = this.value;
             this.value = value;

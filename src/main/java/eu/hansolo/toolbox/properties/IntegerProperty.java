@@ -54,7 +54,7 @@ public class IntegerProperty extends ReadOnlyIntegerProperty {
         setValue(value, null);
     }
     protected void setValue(final Integer value, final IntegerProperty property) {
-        if (null != observers && !observers.isEmpty() && !value.equals(getValue())) {
+        if (!value.equals(getValue())) {
             willChange(this.value, value);
             final Integer oldValue = this.value;
             this.value = value;

@@ -52,7 +52,7 @@ public abstract class Property<T extends Object> extends ReadOnlyProperty<T> {
         setValue(value, null);
     }
     protected void setValue(final T value, final Property<T> property) {
-        if (null != observers && !observers.isEmpty() && !value.equals(getValue())) {
+        if (!value.equals(getValue())) {
             willChange(this.value, value);
             final T oldValue = this.value;
             this.value = value;
