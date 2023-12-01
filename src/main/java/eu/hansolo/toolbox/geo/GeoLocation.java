@@ -54,6 +54,9 @@ public class GeoLocation {
     public GeoLocation() {
         this(Instant.now().getEpochSecond(), "", "", 0.0, 0.0, 0.0, 1.0);
     }
+    public GeoLocation(final double latitude, final double longitude) {
+        this(Instant.now().getEpochSecond(), "", "", latitude, longitude, 0.0, 1.0);
+    }
     public GeoLocation(final long timestamp, final String name, final String info, final double latitude, final double longitude, final double altitude, final double accuracy) {
         this.id        = UUID.randomUUID().toString();
         this.timestamp = timestamp;

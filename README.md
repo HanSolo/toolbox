@@ -15,6 +15,7 @@ Toolbox contains different useful classes and methods e.g.
 - EventBus in package eu.hansolo.toolbox.evtbus
 - Common date and time formats eu.hansolo.toolbox.time
 - GeoLocation to store lat/lon coordinates and do simple calculations eu.hansolo.toolbox.geo
+- GeoFence to check GeoLocations against polygons eu.hansolo.toolbox.geo
 - System info (incl. architecture, logical and physical cores, memory info, filesystem info and jvm info)
 
 Toolbox will be used in projects like TilesFX, Medusa, Countries, Charts etc.

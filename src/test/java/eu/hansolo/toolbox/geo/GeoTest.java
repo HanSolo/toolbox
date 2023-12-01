@@ -18,10 +18,15 @@
 
 package eu.hansolo.toolbox.geo;
 
+import eu.hansolo.toolbox.evt.type.GeoFenceEvt;
 import eu.hansolo.toolbox.evt.type.GeoLocationChangeEvt;
 import org.junit.jupiter.api.Test;
 
+import java.time.DayOfWeek;
+import java.time.LocalTime;
+import java.time.ZoneId;
 import java.util.Locale;
+import java.util.Set;
 
 
 public class GeoTest {
@@ -52,5 +57,46 @@ public class GeoTest {
         assert home.getName().equals("Home of Han Solo");
         home.setAccuracy(0.9);
         assert home.getAccuracy() == 0.9;
+    }
+
+    @Test
+    void testGeoFence() {
+        GeoLocation l1 = new GeoLocation(51.911504, 7.632918);
+        GeoLocation l2 = new GeoLocation(51.912004, 7.635278);
+        GeoLocation l3 = new GeoLocation(51.910024, 7.636084);
+        GeoLocation l4 = new GeoLocation(51.910220, 7.636916);
+        GeoLocation l5 = new GeoLocation(51.909138, 7.637525);
+        GeoLocation l6 = new GeoLocation(51.908817, 7.635997);
+        GeoLocation l7 = new GeoLocation(51.908563, 7.636117);
+        GeoLocation l8 = new GeoLocation(51.908011, 7.633323);
+        GeoLocation l9 = new GeoLocation(51.908620, 7.633076);
+        GeoLocation l10 = new GeoLocation(51.909262, 7.632963);
+        GeoLocation l11 = new GeoLocation(51.911504, 7.632918);
+
+        Polygon polygon = new Polygon(l1, l2, l3, l4, l5, l6, l7, l8, l9, l10, l11);
+
+        GeoFence geoFence = new GeoFence("Krankenhaus Hiltrup", "GeoFence des Hiltruper Krankenhauses" , "", true, false, LocalTime.now(), LocalTime.now(), ZoneId.systemDefault(), Set.of(DayOfWeek.MONDAY, DayOfWeek.TUESDAY), Set.of("Krankenhäuser"), polygon);
+
+        GeoLocation location1 = GeoLocationBuilder.create().name("location1").info("initially outside").latitude(51.911757).longitude(7.633701).build();
+        GeoLocation location2 = GeoLocationBuilder.create().name("location2").info("initially inside").latitude(51.910356).longitude(7.634406).build();
+
+        geoFence.addGeoFenceObserver(GeoFenceEvt.ENTERED_FENCE, e -> System.out.println("GeoLocation entered fence " + e.getGeoLocation().get().getName()));
+        geoFence.addGeoFenceObserver(GeoFenceEvt.INSIDE_FENCE, e -> System.out.println("GeoLocation is inside fence " + e.getGeoLocation().get().getName()));
+        geoFence.addGeoFenceObserver(GeoFenceEvt.LEFT_FENCE, e -> System.out.println("GeoLocation left fence " + e.getGeoLocation().get().getName()));
+        geoFence.addGeoFenceObserver(GeoFenceEvt.OUTSIDE_FENCE, e -> System.out.println("GeoLocation is outside fence " + e.getGeoLocation().get().getName()));
+
+        assert !geoFence.isInFence(location1);
+
+        assert geoFence.isInFence(location2);
+
+        // Move location1 inside fence
+        location1.set(51.910356, 7.634406);
+        assert geoFence.isInFence(location1);
+
+
+        // Move location2 outside fence
+        location2.set(51.911757, 7.633701);
+        assert !geoFence.isInFence(location2);
+
     }
 }
