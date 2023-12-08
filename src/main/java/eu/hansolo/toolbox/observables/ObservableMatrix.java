@@ -790,6 +790,7 @@ public class ObservableMatrix<T> {
     }
 
     public void fireMatrixItemChangeEvt(final MatrixItemChangeEvt<T> evt) {
+        if (null == itemObservers) { return; }
         // Call all observers that have subscribed to specific event types
         itemObservers.entrySet().stream()
                                 .filter(entry -> !entry.getKey().equals(MatrixItemChangeEvt.ANY))
