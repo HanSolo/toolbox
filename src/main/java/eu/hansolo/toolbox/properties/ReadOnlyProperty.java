@@ -84,9 +84,15 @@ public abstract class ReadOnlyProperty<T extends Object> {
         this.bidirectional    = false;
     }
 
-    public List<EvtObserver<PropertyChangeEvt<T>>> getObservers() { return observers; }
+    public List<EvtObserver<PropertyChangeEvt<T>>> getObservers() {
+        if (null == observers) { observers = new CopyOnWriteArrayList<>(); }
+        return observers;
+    }
 
-    public List<EvtObserver<InvalidationEvt<T>>> getInvalidationObservers() { return invalidationObservers; }
+    public List<EvtObserver<InvalidationEvt<T>>> getInvalidationObservers() {
+        if (null == invalidationObservers) { invalidationObservers = new CopyOnWriteArrayList<>(); }
+        return invalidationObservers;
+    }
 
 
     // ******************** Event Handling ************************************

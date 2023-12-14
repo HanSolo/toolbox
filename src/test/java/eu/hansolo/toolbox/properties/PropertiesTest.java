@@ -70,12 +70,11 @@ public class PropertiesTest {
 
 
         // Register listeners
-        pojo.doubleValueProperty().addOnChange(e -> System.out.println("DoubleProperty: " + e.getOldValue() + " -> " + e.getValue()));
+        pojo.doubleValueProperty().addOnChange(e -> System.out.println("POJO DoubleProperty: " + e.getOldValue() + " -> " + e.getValue()));
 
         doubleProperty.addObserver(e -> System.out.println("DoubleProperty: " + e.getOldValue() + " -> " + e.getValue()));
 
         objectProperty.addObserver(e -> System.out.println("ObjectProperty<String>: " + e.getOldValue() + " -> " + e.getValue()));
-
 
 
         // Set values
@@ -83,27 +82,35 @@ public class PropertiesTest {
 
         System.out.println("\npojo.setValue(7)");
         pojo.setValue(7);
+        assert 7 == pojo.getValue();
 
         System.out.println("\npojo.setValue(7)");
         pojo.setValue(7);
+        assert 7 == pojo.getValue();
 
         System.out.println("\npojo.setValue(5)");
         pojo.setValue(5);
+        assert 5 == pojo.getValue();
 
         System.out.println("\npojo.valueProperty().set(8)");
         pojo.valueProperty().set(8);
+        assert 8 == pojo.getValue();
 
         System.out.println("\ndoubleProperty.set(20)");
         doubleProperty.set(20);
+        assert 20 == doubleProperty.get();
 
         System.out.println("\nobjectProperty.set(Hallo)");
         objectProperty.set(new String("Hallo"));
+        assert "Hallo".equals(objectProperty.get());
 
         System.out.println("\nobjectProperty.set(Test)");
         objectProperty.set(new String("Test"));
+        assert "Test".equals(objectProperty.get());
 
         System.out.println("\nobjectProperty.set(Bla)");
         objectProperty.set("Bla");
+        assert "Bla".equals(objectProperty.get());
 
 
 
@@ -120,6 +127,8 @@ public class PropertiesTest {
         System.out.println("Property B: " + propertyB.get() + " is bound: " + propertyB.isBound());
         System.out.println("\npropertyB.set(5)");
         propertyB.set(5);
+        assert 5 == propertyB.get();
+        assert 5 == propertyA.get();
         System.out.println("\npropertyB = " + propertyB.get());
         System.out.println("propertyA = " + propertyA.get());
         assert propertyB.get() == 5;

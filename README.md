@@ -18,4 +18,6 @@ Toolbox contains different useful classes and methods e.g.
 - GeoFence to check GeoLocations against polygons eu.hansolo.toolbox.geo
 - System info (incl. architecture, logical and physical cores, memory info, filesystem info and jvm info)
 
+For some of the tools you will find implementations in the test package e.g. the EventBus.
+
 Toolbox will be used in projects like TilesFX, Medusa, Countries, Charts etc.

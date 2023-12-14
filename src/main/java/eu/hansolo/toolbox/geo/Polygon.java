@@ -136,7 +136,7 @@ public class Polygon {
     }
 
     @Override public String toString() {
-        StringBuilder msgBuilder = new StringBuilder();
+        final StringBuilder msgBuilder = new StringBuilder();
         msgBuilder.append(Constants.SQUARE_BRACKET_OPEN);
         for (PolygonPoint p : points) {
             msgBuilder.append(p.toString()).append(Constants.COMMA);
