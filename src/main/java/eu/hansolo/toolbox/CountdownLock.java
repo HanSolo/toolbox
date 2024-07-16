@@ -39,7 +39,7 @@ public class CountdownLock<T> {
     public CountdownLock(final Command cmd, final T param, final Duration timeout) {
         if (null == cmd || null == timeout) { throw new IllegalArgumentException("Parameters cannot be null"); }
 
-        this.service     = Executors.newScheduledThreadPool(1);
+        this.service     = Executors.newSingleThreadScheduledExecutor();
         this.cmd         = cmd;
         this.param       = param;
         this.timeout     = timeout;

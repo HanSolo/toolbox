@@ -21,7 +21,6 @@ package eu.hansolo.toolbox.properties;
 
 public class ReadOnlyLongProperty extends ReadOnlyProperty<Long> {
     protected LongProperty propertyToUpdate;
-    protected boolean      bidirectional;
 
 
     // ******************** Constructors **************************************

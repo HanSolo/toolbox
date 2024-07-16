@@ -377,7 +377,7 @@ public class Helper {
 
     public static final String readFromInputStream(final InputStream inputStream) throws IOException {
         StringBuilder resultStringBuilder = new StringBuilder();
-        try (BufferedReader br = new BufferedReader(new InputStreamReader(inputStream))) {
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(inputStream, Charset.defaultCharset()))) {
             String line;
             while ((line = br.readLine()) != null) {
                 resultStringBuilder.append(line).append("\n");
@@ -409,7 +409,7 @@ public class Helper {
         if (null == filename || filename.isEmpty()) { throw new IllegalArgumentException("filename cannot be null or empty"); }
         if (null == text || text.isEmpty()) { throw new IllegalArgumentException("text cannot be null or empty"); }
         try {
-            Files.write(Paths.get("/" + filename), text.getBytes());
+            Files.write(Paths.get("/" + filename), text.getBytes(Charset.defaultCharset()));
         } catch (IOException e) {
             //System.out.println("Error saving download text file. " + e);
         }
@@ -690,15 +690,20 @@ public class Helper {
         try {
             final ProcessBuilder processBuilder = OperatingSystem.WINDOWS == operatingSystem ? new ProcessBuilder(WIN_DETECT_ARCH_CMDS) : new ProcessBuilder(UX_DETECT_ARCH_CMDS);
             final Process        process        = processBuilder.start();
-            final String         result         = new BufferedReader(new InputStreamReader(process.getInputStream())).lines().collect(Collectors.joining("\n"));
+            String result;
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream(), Charset.defaultCharset()))) {
+                result = reader.lines().collect(Collectors.joining("\n"));
+            } catch (IOException ex) {
+                result = "";
+            }
             switch(operatingSystem) {
                 case WINDOWS:
                     ARCHITECTURE_MATCHER.reset(result);
                     final List<MatchResult> results = ARCHITECTURE_MATCHER.results().collect(Collectors.toList());
                     if(results.size() > 0) { Architecture.fromText(results.get(0).group(2)); }
                     break;
-                case MACOS: return Architecture.fromText(result);
-                case LINUX: return Architecture.fromText(result);
+                case MACOS  : return Architecture.fromText(result);
+                case LINUX  : return Architecture.fromText(result);
             }
         } catch (IOException e) {
             return Architecture.NOT_FOUND;
@@ -719,7 +724,7 @@ public class Helper {
     }
 
     public static final OperatingSystem getOperatingSystem() {
-        String os = System.getProperty("os.name").toLowerCase();
+        String os = System.getProperty("os.name").toLowerCase(Locale.ENGLISH);
         if (os.contains("win")) {
             return OperatingSystem.WINDOWS;
         } else if (os.contains("apple") || os.contains("mac")) {
@@ -728,7 +733,12 @@ public class Helper {
             try {
                 final ProcessBuilder processBuilder = new ProcessBuilder(DETECT_ALPINE_CMDS);
                 final Process        process        = processBuilder.start();
-                final String         result         = new BufferedReader(new InputStreamReader(process.getInputStream())).lines().collect(Collectors.joining("\n"));
+                String result;
+                try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream(), Charset.defaultCharset()))) {
+                    result = reader.lines().collect(Collectors.joining("\n"));
+                } catch (IOException ex) {
+                    result = null;
+                }
                 return null == result ? OperatingSystem.LINUX : result.equals("1") ? OperatingSystem.ALPINE_LINUX : OperatingSystem.LINUX;
             } catch (IOException e) {
                 e.printStackTrace();
@@ -749,19 +759,29 @@ public class Helper {
         try {
             final ProcessBuilder processBuilder = OperatingSystem.WINDOWS == operatingSystem ? new ProcessBuilder(WIN_DETECT_ARCH_CMDS) : new ProcessBuilder(UX_DETECT_ARCH_CMDS);
             final Process        process        = processBuilder.start();
-            final String         result         = new BufferedReader(new InputStreamReader(process.getInputStream())).lines().collect(Collectors.joining("\n"));
+            String result;
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream(), Charset.defaultCharset()))) {
+                result = reader.lines().collect(Collectors.joining("\n"));
+            } catch (IOException ex) {
+                result = "";
+            }
             switch(operatingSystem) {
                 case WINDOWS:
                     ARCHITECTURE_MATCHER.reset(result);
                     final List<MatchResult> results     = ARCHITECTURE_MATCHER.results().collect(Collectors.toList());
                     final int               noOfResults = results.size();
                     return noOfResults > 0 ? OperatingMode.NATIVE : OperatingMode.NOT_FOUND;
-                case MACOS:
+                case MACOS  :
                     final ProcessBuilder processBuilder1 = new ProcessBuilder(MAC_DETECT_ROSETTA2_CMDS);
                     final Process        process1        = processBuilder1.start();
-                    final String         result1         = new BufferedReader(new InputStreamReader(process1.getInputStream())).lines().collect(Collectors.joining("\n"));
+                    String result1;
+                    try (BufferedReader reader = new BufferedReader(new InputStreamReader(process1.getInputStream(), Charset.defaultCharset()))) {
+                        result1 = reader.lines().collect(Collectors.joining("\n"));
+                    } catch (IOException ex) {
+                        result1 = "";
+                    }
                     return result1.equals("1") ? OperatingMode.EMULATED : OperatingMode.NATIVE;
-                case LINUX:
+                case LINUX  :
                     return OperatingMode.NATIVE;
                 default: return OperatingMode.NOT_FOUND;
             }
@@ -902,20 +922,21 @@ public class Helper {
             for (String row : split)
                 if (row.startsWith("physical id")) {
                     latestPhysicalId = row;
-                    if (physicalIdToCoreId.get(row) == null)
+                    if (physicalIdToCoreId.get(row) == null) {
                         physicalIdToCoreId.put(latestPhysicalId, new HashSet<String>());
-
-                } else if (row.startsWith("core id"))
+                    }
+                } else if (row.startsWith("core id")) {
                     // "physical id" row should always come before "core id" row, so that physicalIdToCoreId should
                     // not be null here.
                     physicalIdToCoreId.get(latestPhysicalId).add(row);
-
-            for (Set<String> coreIds : physicalIdToCoreId.values())
+                }
+            for (Set<String> coreIds : physicalIdToCoreId.values()) {
                 coreIdCount += coreIds.size();
-
+            }
             return coreIdCount;
         } catch (SecurityException | IOException e) {
             String msg = String.format("Error while reading %s", path);
+            System.out.println(msg);
         }
         return null;
     }

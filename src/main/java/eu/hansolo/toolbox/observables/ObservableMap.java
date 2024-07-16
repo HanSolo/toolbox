@@ -139,7 +139,9 @@ public class ObservableMap<K,V> implements Map<K,V>, Cloneable {
     public boolean isEmpty() { return this.map.isEmpty(); }
 
 
-    @Override public V getOrDefault(final Object key, final V defaultValue) { return getOrDefault(key, defaultValue); }
+    @Override public V getOrDefault(final Object key, final V defaultValue) {
+        return map.containsKey(key) ? map.get(key) : defaultValue;
+    }
 
     @Override public V putIfAbsent(final K key, final V value) {
         final V result = map.putIfAbsent(key, value);

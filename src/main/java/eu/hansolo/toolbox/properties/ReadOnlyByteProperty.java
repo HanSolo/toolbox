@@ -21,7 +21,6 @@ package eu.hansolo.toolbox.properties;
 
 public class ReadOnlyByteProperty extends ReadOnlyProperty<Byte> {
     protected ByteProperty propertyToUpdate;
-    protected boolean      bidirectional;
 
 
     // ******************** Constructors **************************************

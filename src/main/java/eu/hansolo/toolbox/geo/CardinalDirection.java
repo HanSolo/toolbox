@@ -42,10 +42,10 @@ public enum CardinalDirection {
     NNW("North North-West", "NNW", 326.25, 348.75),
     NOT_FOUND("", "", -1, -1);
 
-    public String direction;
-    public String shortForm;
-    public double from;
-    public double to;
+    public final String direction;
+    public final String shortForm;
+    public final double from;
+    public final double to;
 
 
     CardinalDirection(final String direction, final String shortForm, final double from, final double to) {

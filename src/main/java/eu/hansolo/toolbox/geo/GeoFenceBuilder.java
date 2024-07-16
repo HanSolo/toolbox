@@ -112,17 +112,17 @@ public class GeoFenceBuilder <B extends GeoFenceBuilder<B>> {
         GeoFence geoFence = new GeoFence();
         properties.forEach((key, property) -> {
             switch(key) {
-                case "name"        -> geoFence.setName(((StringProperty) properties.get(key)).get());
-                case "info"        -> geoFence.setInfo(((StringProperty) properties.get(key)).get());
-                case "group"       -> geoFence.setGroup(((StringProperty) properties.get(key)).get());
-                case "isActive"    -> geoFence.setActive(((BooleanProperty) properties.get(key)).get());
-                case "isTimeBased" -> geoFence.setTimeBased(((BooleanProperty) properties.get(key)).get());
-                case "startTime"   -> geoFence.setStartTime(((ObjectProperty<LocalTime>) properties.get(key)).get());
-                case "endTime"     -> geoFence.setEndTime(((ObjectProperty<LocalTime>) properties.get(key)).get());
-                case "zoneId"      -> geoFence.setZoneId(((ObjectProperty<ZoneId>) properties.get(key)).get());
-                case "days"        -> geoFence.setDays(((ObjectProperty<Set<DayOfWeek>>) properties.get(key)).get());
-                case "tags"        -> geoFence.setTags(((ObjectProperty<Set<String>>) properties.get(key)).get());
-                case "polygon"     -> geoFence.setPolygon(((ObjectProperty<Polygon>) properties.get(key)).get());
+                case "name"        -> geoFence.setName(((StringProperty) property).get());
+                case "info"        -> geoFence.setInfo(((StringProperty) property).get());
+                case "group"       -> geoFence.setGroup(((StringProperty) property).get());
+                case "isActive"    -> geoFence.setActive(((BooleanProperty) property).get());
+                case "isTimeBased" -> geoFence.setTimeBased(((BooleanProperty) property).get());
+                case "startTime"   -> geoFence.setStartTime(((ObjectProperty<LocalTime>) property).get());
+                case "endTime"     -> geoFence.setEndTime(((ObjectProperty<LocalTime>) property).get());
+                case "zoneId"      -> geoFence.setZoneId(((ObjectProperty<ZoneId>) property).get());
+                case "days"        -> geoFence.setDays(((ObjectProperty<Set<DayOfWeek>>) property).get());
+                case "tags"        -> geoFence.setTags(((ObjectProperty<Set<String>>) property).get());
+                case "polygon"     -> geoFence.setPolygon(((ObjectProperty<Polygon>) property).get());
             }
         });
         return geoFence;

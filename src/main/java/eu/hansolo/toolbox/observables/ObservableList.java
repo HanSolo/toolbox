@@ -182,6 +182,7 @@ public class ObservableList<T> implements List<T>, RandomAccess, Cloneable {
 
     @Override public ObservableList<T> clone() {
         try {
+            super.clone();
             ObservableList<T> clone = new ObservableList<>();
             clone.addAll(list);
             return clone;

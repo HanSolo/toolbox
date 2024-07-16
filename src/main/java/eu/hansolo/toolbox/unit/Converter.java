@@ -78,10 +78,10 @@ public class Converter {
     }
     public Converter(final Category category, final UnitDefinition baseUnitDefinition) {
         this.baseUnitDefinition = baseUnitDefinition;
-        bean                    = BASE_UNITS.get(category).UNIT;
-        locale             = Locale.US;
-        decimals           = 2;
-        formatString       = "%.2f";
+        this.bean               = BASE_UNITS.get(category).UNIT;
+        this.locale             = Locale.US;
+        this.decimals           = 2;
+        this.formatString       = "%.2f";
     }
 
 

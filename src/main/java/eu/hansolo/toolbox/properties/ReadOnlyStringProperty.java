@@ -21,7 +21,6 @@ package eu.hansolo.toolbox.properties;
 
 public class ReadOnlyStringProperty extends ReadOnlyProperty<String> {
     protected StringProperty propertyToUpdate;
-    protected boolean        bidirectional;
 
     // ******************** Constructors **************************************
     public ReadOnlyStringProperty() {

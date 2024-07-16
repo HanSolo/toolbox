@@ -21,7 +21,6 @@ package eu.hansolo.toolbox.properties;
 
 public class ReadOnlyBooleanProperty extends ReadOnlyProperty<Boolean> {
     protected BooleanProperty propertyToUpdate;
-    protected boolean         bidirectional;
 
 
     // ******************** Constructors **************************************

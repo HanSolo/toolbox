@@ -21,7 +21,6 @@ package eu.hansolo.toolbox.properties;
 
 public class ReadOnlyDoubleProperty extends ReadOnlyProperty<Double> {
     protected DoubleProperty propertyToUpdate;
-    protected boolean        bidirectional;
 
 
     // ******************** Constructors **************************************

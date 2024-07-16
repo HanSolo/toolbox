@@ -24,6 +24,8 @@ import eu.hansolo.toolbox.evt.EvtObserver;
 import eu.hansolo.toolbox.evt.type.PropertyChangeEvt;
 import org.junit.jupiter.api.Test;
 
+import java.util.concurrent.ThreadLocalRandom;
+
 
 public class PropertiesTest {
 
@@ -207,6 +209,31 @@ public class PropertiesTest {
         assert propertyD.get() == 5;
     }
 
+    @Test
+    void testPropertyEvtHandler() {
+        PoJo pojo = new PoJo();
+        pojo.doubleValueProperty().addOnChange(evt -> {
+            System.out.println("Event handled: " + evt.getValue());
+            long sum = 0;
+            for (int i = 0 ; i < 5 ; i++) {
+                sum += f(i);
+            }
+            System.out.println("Sum: " + (sum + evt.getValue()));
+        });
+
+        long initialStart = System.nanoTime();
+        for (int i = 0 ; i < 1000 ; i++) {
+            long start = System.nanoTime();
+            pojo.setDoubleValue(ThreadLocalRandom.current().nextDouble());
+            System.out.println((System.nanoTime() - start) + "ns");
+        }
+        System.out.println("Duration: " + ((System.nanoTime() - initialStart) / 1_000_000) + "ms");
+    }
+
+    public static int f( final int n ) { return n == 0 ? 1 : n * f( n - 1 ); }
+
+
+    // ******************** Inner Classes *************************************
     public class PoJo {
         private double          _value;
         private DoubleProperty  value;

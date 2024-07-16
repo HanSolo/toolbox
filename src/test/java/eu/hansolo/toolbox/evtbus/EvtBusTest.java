@@ -97,8 +97,8 @@ public class EvtBusTest {
 
         // Create a topic event class
         class TopicEvt extends ChangeEvt {
-            public static final EvtType<TopicEvt> ANY     = new EvtType<>(ChangeEvt.ANY, "ANY");
-            public static final EvtType<TopicEvt> NEW_MSG = new EvtType<>(TopicEvt.ANY, "NEW_MSG");
+            public static final EvtType<TopicEvt> ANY        = new EvtType<>(ChangeEvt.ANY, "ANY");
+            public static final EvtType<TopicEvt> NEW_MSG    = new EvtType<>(TopicEvt.ANY, "NEW_MSG");
             public static final EvtType<TopicEvt> UPDATE_MSG = new EvtType<>(TopicEvt.ANY, "UPDATE_MSG");
 
             private final Msg msg;

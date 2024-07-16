@@ -31,6 +31,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -38,15 +39,15 @@ import java.util.stream.Stream;
 
 
 public class ObservableMatrix<T> {
-    private final    Class<T>                                                               type;
-    private          Map<EvtType<? extends Evt>, List<EvtObserver<MatrixChangeEvt<T>>>>     matrixObservers;
-    private          Map<EvtType<? extends Evt>, List<EvtObserver<MatrixItemChangeEvt<T>>>> itemObservers;
-    private          AtomicReference<T>[][]                                                 matrix;
-    private volatile int                                                                    cols;
-    private volatile int                                                                    rows;
-    private          boolean                                                                colsMirrored;
-    private          boolean                                                                rowsMirrored;
-    private          boolean                                                                resizeMatrixWhenInnerRowOrColIsRemoved;
+    private final Class<T>                                                               type;
+    private       Map<EvtType<? extends Evt>, List<EvtObserver<MatrixChangeEvt<T>>>>     matrixObservers;
+    private       Map<EvtType<? extends Evt>, List<EvtObserver<MatrixItemChangeEvt<T>>>> itemObservers;
+    private       AtomicReference<T>[][]                                                 matrix;
+    private       AtomicInteger                                                          cols;
+    private       AtomicInteger                                                          rows;
+    private       boolean                                                                colsMirrored;
+    private       boolean                                                                rowsMirrored;
+    private       boolean                                                                resizeMatrixWhenInnerRowOrColIsRemoved;
 
 
     // ******************** Constructors **************************************
@@ -56,22 +57,22 @@ public class ObservableMatrix<T> {
     public ObservableMatrix(Class<T> type, final int cols, final int rows, final boolean resizeMatrixWhenInnerRowOrColIsRemoved) {
         this.type                                   = type;
         this.matrix                                 = createArray(type, cols, rows);
-        this.cols                                   = cols;
-        this.rows                                   = rows;
+        this.cols                                   = new AtomicInteger(cols);
+        this.rows                                   = new AtomicInteger(rows);
         this.colsMirrored                           = false;
         this.rowsMirrored                           = false;
         this.resizeMatrixWhenInnerRowOrColIsRemoved = resizeMatrixWhenInnerRowOrColIsRemoved;
     }
     public ObservableMatrix(final ObservableMatrix<T> copyFromMatrix) {
         this.type                                   = copyFromMatrix.getType();
-        this.matrix                                 = createArray(type, copyFromMatrix.cols, copyFromMatrix.rows);
+        this.matrix                                 = createArray(type, copyFromMatrix.cols.get(), copyFromMatrix.rows.get());
         this.cols                                   = copyFromMatrix.cols;
         this.rows                                   = copyFromMatrix.rows;
         this.colsMirrored                           = copyFromMatrix.colsMirrored;
         this.rowsMirrored                           = copyFromMatrix.rowsMirrored;
         this.resizeMatrixWhenInnerRowOrColIsRemoved = copyFromMatrix.resizeMatrixWhenInnerRowOrColIsRemoved;
-        for (int y = 0 ; y < rows ; y++) {
-            for (int x = 0 ; x < cols ; x++) {
+        for (int y = 0 ; y < rows.get() ; y++) {
+            for (int x = 0 ; x < cols.get() ; x++) {
                 setItemAt(x, y, copyFromMatrix.getItemAt(x, y));
             }
         }
@@ -92,7 +93,7 @@ public class ObservableMatrix<T> {
      * @return the given item in the matrix at the given position defined by x and y
      */
     public T getItemAt(final int x, final int y) {
-        if (x < 0 || x > (cols - 1) || y < 0 || y > (rows - 1)) { throw new IllegalArgumentException("cols/rows cannot be smaller than 0/0 or larger than " + (cols - 1) + "/" + (rows - 1)); }
+        if (x < 0 || x > (cols.get() - 1) || y < 0 || y > (rows.get() - 1)) { throw new IllegalArgumentException("cols/rows cannot be smaller than 0/0 or larger than " + (cols.get() - 1) + "/" + (rows.get() - 1)); }
         return matrix[x][y].get();
     }
 
@@ -106,7 +107,7 @@ public class ObservableMatrix<T> {
         setItemAt(x, y, item, true);
     }
     public void setItemAt(final int x, final int y, final T item, final boolean notify) {
-        if (x < 0 || x > (cols - 1) || y < 0 || y > (rows - 1)) { throw new IllegalArgumentException("cols/rows cannot be smaller than 0"); }
+        if (x < 0 || x > (cols.get() - 1) || y < 0 || y > (rows.get() - 1)) { throw new IllegalArgumentException("cols/rows cannot be smaller than 0"); }
 
         T oldItem = matrix[x][y].get();
         matrix[x][y].set(item);
@@ -132,7 +133,7 @@ public class ObservableMatrix<T> {
      */
     public void removeItemAt(final int x, final int y) { removeItemAt(x, y, true); }
     public void removeItemAt(final int x, final int y, final boolean notify) {
-        if (x < 0 || x > (cols - 1) || y < 0 || y > (rows - 1)) { throw new IllegalArgumentException("cols/rows cannot be smaller than 0"); }
+        if (x < 0 || x > (cols.get() - 1) || y < 0 || y > (rows.get() - 1)) { throw new IllegalArgumentException("cols/rows cannot be smaller than 0"); }
         T oldItem = matrix[x][y].get();
         matrix[x][y].set(null);
         if (notify) {
@@ -147,8 +148,8 @@ public class ObservableMatrix<T> {
      */
     public void removeItem(final T item) { removeItem(item, true); }
     public void removeItem(final T item, final boolean notify) {
-        for (int y = 0; y < rows; y++) {
-            for (int x = 0; x < cols; x++) {
+        for (int y = 0; y < rows.get(); y++) {
+            for (int x = 0; x < cols.get(); x++) {
                 T matrixItem = matrix[x][y].get();
                 if (null == matrixItem) {
                     continue;
@@ -170,8 +171,8 @@ public class ObservableMatrix<T> {
      * @return true if the given item will be found in the matrix
      */
     public boolean contains(final T item) {
-        for (int y = 0; y < rows; y++) {
-            for (int x = 0; x < cols; x++) {
+        for (int y = 0; y < rows.get(); y++) {
+            for (int x = 0; x < cols.get(); x++) {
                 if (null != matrix[x][y] && matrix[x][y].equals(item)) { return true; }
             }
         }
@@ -187,8 +188,8 @@ public class ObservableMatrix<T> {
      * @return the indices of the given item as an array of in[]
      */
     public int[] getIndicesOf(final T item) {
-        for (int y = 0; y < rows; y++) {
-            for (int x = 0; x < cols; x++) {
+        for (int y = 0; y < rows.get(); y++) {
+            for (int x = 0; x < cols.get(); x++) {
                 if (matrix[x][y].equals(item)) { return new int[]{x, y}; }
             }
         }
@@ -214,9 +215,9 @@ public class ObservableMatrix<T> {
     public Stream<AtomicReference<T>> stream() { return Arrays.stream(matrix).flatMap(t -> Arrays.stream(t)); }
 
     public void reset() {
-        if (rows == -1 || cols == -1) { throw new IllegalArgumentException("cols/rows cannot be smaller 0"); }
-        for (int y = 0 ; y < rows ; y++) {
-            for (int x = 0 ; x < cols ; x++) {
+        if (rows.get() == -1 || cols.get() == -1) { throw new IllegalArgumentException("cols/rows cannot be smaller 0"); }
+        for (int y = 0 ; y < rows.get() ; y++) {
+            for (int x = 0 ; x < cols.get() ; x++) {
                 matrix[x][y] = null;
             }
         }
@@ -228,9 +229,9 @@ public class ObservableMatrix<T> {
      * @return all items in column specified by index as list
      */
     public List<T> getCol(final int col) {
-        if (rows == -1 || cols == -1 || col < 0 || col > cols) { throw new IllegalArgumentException("cols/rows cannot be smaller 0"); }
+        if (rows.get() == -1 || cols.get() == -1 || col < 0 || col > cols.get()) { throw new IllegalArgumentException("cols/rows cannot be smaller 0"); }
         List<T> c = new ArrayList<>();
-        for (int y = 0 ; y < rows ; y++) { c.add(matrix[col][y].get()); }
+        for (int y = 0 ; y < rows.get() ; y++) { c.add(matrix[col][y].get()); }
         return c;
     }
 
@@ -240,9 +241,9 @@ public class ObservableMatrix<T> {
      * @return all items in row specified by index as list
      */
     public List<T> getRow(final int row) {
-        if (rows == -1 || cols == -1 || row < 0 || row > rows) { throw new IllegalArgumentException("cols/rows cannot be smaller 0"); }
+        if (rows.get() == -1 || cols.get() == -1 || row < 0 || row > rows.get()) { throw new IllegalArgumentException("cols/rows cannot be smaller 0"); }
         List<T> r = new ArrayList<>();
-        for (int x = 0 ; x < cols ; x++) { r.add(matrix[x][row].get()); }
+        for (int x = 0 ; x < cols.get() ; x++) { r.add(matrix[x][row].get()); }
         return r;
     }
 
@@ -274,7 +275,7 @@ public class ObservableMatrix<T> {
      * Returns the number of columns in the matrix
      * @return the number of columsn of the matrix
      */
-    public int getNoOfCols() { return cols; }
+    public int getNoOfCols() { return cols.get(); }
 
     /**
      * Sets the number of columsn in the matrix.
@@ -286,22 +287,22 @@ public class ObservableMatrix<T> {
      */
     public void setCols(final int cols) { setCols(cols, true); }
     public void setCols(final int cols, final boolean notify) {
-        if (rows == -1 || cols == -1 || this.cols == -1) { throw new IllegalArgumentException("cols/rows cannot be smaller 0"); }
-        AtomicReference<T>[][] oldMatrix = new AtomicReference[cols][rows];
+        if (rows.get() == -1 || cols == -1 || this.cols.get() == -1) { throw new IllegalArgumentException("cols/rows cannot be smaller 0"); }
+        AtomicReference<T>[][] oldMatrix = new AtomicReference[cols][rows.get()];
 
-        for (int y = 0 ; y < this.rows ; y++) {
-            for (int x = 0 ; x < this.cols ; x++) {
+        for (int y = 0 ; y < this.rows.get() ; y++) {
+            for (int x = 0 ; x < this.cols.get() ; x++) {
                 oldMatrix[x][y].set(matrix[x][y].get());
             }
         }
-        int oldCols = this.cols;
-        this.cols   = cols;
-        matrix = createArray(type, cols, rows);
+        int oldCols = this.cols.get();
+        this.cols.set(cols);
+        matrix = createArray(type, cols, rows.get());
         int c;
-        int r  = rows;
-        if (cols > this.cols) {
+        int r  = rows.get();
+        if (cols > this.cols.get()) {
             c = oldCols;
-        } else if (cols < this.cols) {
+        } else if (cols < this.cols.get()) {
             c = cols;
         } else {
             c = cols;
@@ -323,19 +324,19 @@ public class ObservableMatrix<T> {
      */
     public void addCol(final int at, final Supplier<T> itemSupplier) { addCol(at, itemSupplier, true); }
     public void addCol(final int at, final Supplier<T> itemSupplier, final boolean notify) {
-        if (at < 0 || at > cols) { throw new IllegalArgumentException("index cannot be smaller or larger than cols"); }
+        if (at < 0 || at > cols.get()) { throw new IllegalArgumentException("index cannot be smaller or larger than cols"); }
 
-        cols++;
+        cols.getAndIncrement();
 
-        AtomicReference<T>[][] newMatrix = createArray(type, cols, rows);
-        for (int y = 0 ; y < rows ; y++) {
+        AtomicReference<T>[][] newMatrix = createArray(type, cols.get(), rows.get());
+        for (int y = 0 ; y < rows.get() ; y++) {
             for (int x = 0 ; x < at ; x++) {
                 newMatrix[x][y].set(matrix[x][y].get());
             }
         }
-        for (int y = 0 ; y < rows ; y++) { newMatrix[at][y].set(itemSupplier.get()); }
-        for (int y = 0 ; y < rows ; y++) {
-            for (int x = at + 1 ; x < cols ; x++) {
+        for (int y = 0 ; y < rows.get() ; y++) { newMatrix[at][y].set(itemSupplier.get()); }
+        for (int y = 0 ; y < rows.get() ; y++) {
+            for (int x = at + 1 ; x < cols.get() ; x++) {
                 newMatrix[x][y].set(matrix[x - 1][y].get());
             }
         }
@@ -349,20 +350,20 @@ public class ObservableMatrix<T> {
 
     public void addCol(final int at, final List<T> items) { addCol(at, items, true); }
     public void addCol(final int at, final List<T> items, final boolean notify) {
-        if (at < 0 || at > cols) { throw new IllegalArgumentException("index cannot be smaller or larger than cols"); }
-        if (items.size() != rows) { throw new IllegalArgumentException("no of items must be equal to number of rows"); }
+        if (at < 0 || at > cols.get()) { throw new IllegalArgumentException("index cannot be smaller or larger than cols"); }
+        if (items.size() != rows.get()) { throw new IllegalArgumentException("no of items must be equal to number of rows"); }
 
-        cols++;
+        cols.getAndIncrement();
 
-        AtomicReference<T>[][] newMatrix = createArray(type, cols, rows);
-        for (int y = 0 ; y < rows ; y++) {
+        AtomicReference<T>[][] newMatrix = createArray(type, cols.get(), rows.get());
+        for (int y = 0 ; y < rows.get() ; y++) {
             for (int x = 0 ; x < at ; x++) {
                 newMatrix[x][y].set(matrix[x][y].get());
             }
         }
-        for (int y = 0 ; y < rows ; y++) { newMatrix[at][y].set(items.get(y)); }
-        for (int y = 0 ; y < rows ; y++) {
-            for (int x = at + 1 ; x < cols ; x++) {
+        for (int y = 0 ; y < rows.get() ; y++) { newMatrix[at][y].set(items.get(y)); }
+        for (int y = 0 ; y < rows.get() ; y++) {
+            for (int x = at + 1 ; x < cols.get() ; x++) {
                 newMatrix[x][y].set(matrix[x - 1][y].get());
             }
         }
@@ -378,19 +379,19 @@ public class ObservableMatrix<T> {
         addNullCol(at, true);
     }
     public void addNullCol(final int at, final boolean notify) {
-        if (at < 0 || at > cols) { throw new IllegalArgumentException("index cannot be smaller or larger than cols"); }
+        if (at < 0 || at > cols.get()) { throw new IllegalArgumentException("index cannot be smaller or larger than cols"); }
 
-        cols++;
+        cols.getAndIncrement();
 
-        AtomicReference<T>[][] newMatrix = createArray(type, cols, rows);
-        for (int y = 0 ; y < rows ; y++) {
+        AtomicReference<T>[][] newMatrix = createArray(type, cols.get(), rows.get());
+        for (int y = 0 ; y < rows.get() ; y++) {
             for (int x = 0 ; x < at ; x++) {
                 newMatrix[x][y].set(matrix[x][y].get());
             }
         }
-        for (int y = 0 ; y < rows ; y++) { newMatrix[at][y].set(null); }
-        for (int y = 0 ; y < rows ; y++) {
-            for (int x = at + 1 ; x < cols ; x++) {
+        for (int y = 0 ; y < rows.get() ; y++) { newMatrix[at][y].set(null); }
+        for (int y = 0 ; y < rows.get() ; y++) {
+            for (int x = at + 1 ; x < cols.get() ; x++) {
                 newMatrix[x][y].set(matrix[x - 1][y].get());
             }
         }
@@ -407,17 +408,17 @@ public class ObservableMatrix<T> {
      */
     public void removeCol(final int at) { removeCol(at, true); }
     public void removeCol(final int at, final boolean notify) {
-        if (at < 0 || at > cols) { throw new IllegalArgumentException("index cannot be smaller or larger than cols"); }
-        if (cols <= 1) { throw new IllegalArgumentException("there is just one column in the matrix"); }
+        if (at < 0 || at > cols.get()) { throw new IllegalArgumentException("index cannot be smaller or larger than cols"); }
+        if (cols.get() <= 1) { throw new IllegalArgumentException("there is just one column in the matrix"); }
 
         for (int y = 0 ; y < getNoOfRows() ; y++) { matrix[at][y] = null; }
 
-        if (0 == at || (cols - 1) == at || resizeMatrixWhenInnerRowOrColIsRemoved) {
-            cols--;
+        if (0 == at || (cols.get() - 1) == at || resizeMatrixWhenInnerRowOrColIsRemoved) {
+            cols.getAndDecrement();
 
-            AtomicReference<T>[][] newMatrix = createArray(type, cols, rows);
-            for (int y = 0; y < rows; y++) {
-                for (int x = 0; x <= cols; x++) {
+            AtomicReference<T>[][] newMatrix = createArray(type, cols.get(), rows.get());
+            for (int y = 0; y < rows.get(); y++) {
+                for (int x = 0; x <= cols.get(); x++) {
                     if (x < at) {
                         newMatrix[x][y].set(matrix[x][y].get());
                     } else if (x == at) {
@@ -441,19 +442,19 @@ public class ObservableMatrix<T> {
      */
     public void addRow(final int at, final Supplier<T> itemSupplier) { addRow(at, itemSupplier, true); }
     public void addRow(final int at, final Supplier<T> itemSupplier, final boolean notify) {
-        if (at < 0 || at > rows) { throw new IllegalArgumentException("index cannot be smaller or larger than rows"); }
+        if (at < 0 || at > rows.get()) { throw new IllegalArgumentException("index cannot be smaller or larger than rows"); }
 
-        rows++;
+        rows.getAndIncrement();
 
-        AtomicReference<T>[][] newMatrix = createArray(type, cols, rows);
+        AtomicReference<T>[][] newMatrix = createArray(type, cols.get(), rows.get());
         for (int y = 0 ; y < at ; y++) {
-            for (int x = 0 ; x < cols ; x++) {
+            for (int x = 0 ; x < cols.get() ; x++) {
                 newMatrix[x][y].set(matrix[x][y].get());
             }
         }
-        for (int x = 0 ; x < cols ; x++) { newMatrix[x][at].set(itemSupplier.get()); }
-        for (int y = at + 1 ; y < rows ; y++) {
-            for (int x = 0 ; x < cols ; x++) {
+        for (int x = 0 ; x < cols.get() ; x++) { newMatrix[x][at].set(itemSupplier.get()); }
+        for (int y = at + 1 ; y < rows.get() ; y++) {
+            for (int x = 0 ; x < cols.get() ; x++) {
                 newMatrix[x][y].set(matrix[x][y - 1].get());
             }
         }
@@ -467,20 +468,20 @@ public class ObservableMatrix<T> {
 
     public void addRow(final int at, final List<T> items) { addRow(at, items, true); }
     public void addRow(final int at, final List<T> items, final boolean notify) {
-        if (at < 0 || at > rows) { throw new IllegalArgumentException("index cannot be smaller or larger than rows"); }
-        if (items.size() != cols) { throw new IllegalArgumentException("now of items must be equal to number of columns"); }
+        if (at < 0 || at > rows.get()) { throw new IllegalArgumentException("index cannot be smaller or larger than rows"); }
+        if (items.size() != cols.get()) { throw new IllegalArgumentException("now of items must be equal to number of columns"); }
 
-        rows++;
+        rows.getAndIncrement();
 
-        AtomicReference<T>[][] newMatrix = createArray(type, cols, rows);
+        AtomicReference<T>[][] newMatrix = createArray(type, cols.get(), rows.get());
         for (int y = 0 ; y < at ; y++) {
-            for (int x = 0 ; x < cols ; x++) {
+            for (int x = 0 ; x < cols.get() ; x++) {
                 newMatrix[x][y].set(matrix[x][y].get());
             }
         }
-        for (int x = 0 ; x < cols ; x++) { newMatrix[x][at].set(items.get(x)); }
-        for (int y = at + 1 ; y < rows ; y++) {
-            for (int x = 0 ; x < cols ; x++) {
+        for (int x = 0 ; x < cols.get() ; x++) { newMatrix[x][at].set(items.get(x)); }
+        for (int y = at + 1 ; y < rows.get() ; y++) {
+            for (int x = 0 ; x < cols.get() ; x++) {
                 newMatrix[x][y].set(matrix[x][y - 1].get());
             }
         }
@@ -496,19 +497,19 @@ public class ObservableMatrix<T> {
         addNullRow(at, true);
     }
     public void addNullRow(final int at, final boolean notify) {
-        if (at < 0 || at > rows) { throw new IllegalArgumentException("index cannot be smaller or larger than rows"); }
+        if (at < 0 || at > rows.get()) { throw new IllegalArgumentException("index cannot be smaller or larger than rows"); }
 
-        rows++;
+        rows.getAndIncrement();
 
-        AtomicReference<T>[][] newMatrix = createArray(type, cols, rows);
+        AtomicReference<T>[][] newMatrix = createArray(type, cols.get(), rows.get());
         for (int y = 0 ; y < at ; y++) {
-            for (int x = 0 ; x < cols ; x++) {
+            for (int x = 0 ; x < cols.get() ; x++) {
                 newMatrix[x][y].set(matrix[x][y].get());
             }
         }
-        for (int x = 0 ; x < cols ; x++) { newMatrix[x][at].set(null); }
-        for (int y = at + 1 ; y < rows ; y++) {
-            for (int x = 0 ; x < cols ; x++) {
+        for (int x = 0 ; x < cols.get() ; x++) { newMatrix[x][at].set(null); }
+        for (int y = at + 1 ; y < rows.get() ; y++) {
+            for (int x = 0 ; x < cols.get() ; x++) {
                 newMatrix[x][y].set(matrix[x][y - 1].get());
             }
         }
@@ -525,24 +526,24 @@ public class ObservableMatrix<T> {
      */
     public void removeRow(final int at) { removeRow(at, true); }
     public void removeRow(final int at, final boolean notify) {
-        if (at < 0 || at > rows) { throw new IllegalArgumentException("index cannot be smaller or larger than rows"); }
-        if (rows <= 1) { throw new IllegalArgumentException("there is just one row in the matrix"); }
+        if (at < 0 || at > rows.get()) { throw new IllegalArgumentException("index cannot be smaller or larger than rows"); }
+        if (rows.get() <= 1) { throw new IllegalArgumentException("there is just one row in the matrix"); }
 
         for (int x = 0 ; x < getNoOfCols() ; x++) { matrix[x][at] = null; }
 
-        if (0 == at || (rows - 1) == at || resizeMatrixWhenInnerRowOrColIsRemoved) {
-            rows--;
+        if (0 == at || (rows.get() - 1) == at || resizeMatrixWhenInnerRowOrColIsRemoved) {
+            rows.getAndDecrement();
 
-            AtomicReference<T>[][] newMatrix = createArray(type, cols, rows);
-            for (int y = 0; y <= rows; y++) {
+            AtomicReference<T>[][] newMatrix = createArray(type, cols.get(), rows.get());
+            for (int y = 0; y <= rows.get(); y++) {
                 if (y < at) {
-                    for (int x = 0; x < cols; x++) {
+                    for (int x = 0; x < cols.get(); x++) {
                         newMatrix[x][y].set(matrix[x][y].get());
                     }
                 } else if (y == at) {
 
                 } else {
-                    for (int x = 0; x < cols; x++) {
+                    for (int x = 0; x < cols.get(); x++) {
                         newMatrix[x][y - 1].set(matrix[x][y].get());
                     }
                 }
@@ -559,7 +560,7 @@ public class ObservableMatrix<T> {
      * Returns the number of rows in the matrix
      * @return the number of rows in the matrix
      */
-    public int getNoOfRows() { return rows; }
+    public int getNoOfRows() { return rows.get(); }
 
     /**
      * Sets the number of rows in the matrix.
@@ -571,22 +572,23 @@ public class ObservableMatrix<T> {
      */
     public void setRows(final int rows) { setRows(rows, true); }
     public void setRows(final int rows, final boolean notify) {
-        if (rows == -1 || cols == -1 || this.rows == -1) { throw new IllegalArgumentException("cols/rows cannot be smaller 0"); }
-        AtomicReference<T>[][] oldMatrix = (AtomicReference<T>[][]) new Object[cols][rows];
-        for (int y = 0 ; y < this.rows ; y++) {
-            for (int x = 0 ; x < this.cols ; x++) {
+        if (rows == -1 || cols.get() == -1 || this.rows.get() == -1) { throw new IllegalArgumentException("cols/rows cannot be smaller 0"); }
+        //AtomicReference<T>[][] oldMatrix = (AtomicReference<T>[][]) new Object[cols][rows];
+        AtomicReference<T>[][] oldMatrix = new AtomicReference[cols.get()][rows];
+        for (int y = 0 ; y < this.rows.get() ; y++) {
+            for (int x = 0 ; x < this.cols.get() ; x++) {
                 oldMatrix[x][y].set(matrix[x][y].get());
             }
         }
-        int oldRows = this.rows;
-        this.rows   = rows;
-        matrix = createArray(type, cols, rows);
+        int oldRows = this.rows.get();
+        this.rows.set(rows);
+        matrix = createArray(type, cols.get(), rows);
 
-        int c  = cols;
+        int c  = cols.get();
         int r;
-        if (rows > this.rows) {
+        if (rows > this.rows.get()) {
             r = oldRows;
-        } else if (rows < this.rows) {
+        } else if (rows < this.rows.get()) {
             r = rows;
         } else {
             r = rows;
@@ -636,7 +638,7 @@ public class ObservableMatrix<T> {
         }
         colsMirrored = !colsMirrored;
         if (notify) {
-            fireMatrixChangeEvt(new MatrixChangeEvt<>(ObservableMatrix.this, MatrixChangeEvt.COLUMNS_MIRRORED, cols, -1));
+            fireMatrixChangeEvt(new MatrixChangeEvt<>(ObservableMatrix.this, MatrixChangeEvt.COLUMNS_MIRRORED, cols.get(), -1));
         }
     }
 
@@ -652,7 +654,7 @@ public class ObservableMatrix<T> {
         }
         rowsMirrored = !rowsMirrored;
         if (notify) {
-            fireMatrixChangeEvt(new MatrixChangeEvt<>(ObservableMatrix.this, MatrixChangeEvt.ROWS_MIRRORED, -1, rows));
+            fireMatrixChangeEvt(new MatrixChangeEvt<>(ObservableMatrix.this, MatrixChangeEvt.ROWS_MIRRORED, -1, rows.get()));
         }
     }
 
@@ -672,8 +674,8 @@ public class ObservableMatrix<T> {
      * Method to reduce matrix size in case the first column is empty (all items == null)
      */
     private void shiftLeft() {
-        for (int y = 0 ; y < rows ; y++) {
-            for (int x = 1 ; x < cols ; x++) {
+        for (int y = 0 ; y < rows.get() ; y++) {
+            for (int x = 1 ; x < cols.get() ; x++) {
                 matrix[x - 1][y] = matrix[x][y];
             }
         }
@@ -683,8 +685,8 @@ public class ObservableMatrix<T> {
      * Method to reduce matrix size in case the first row is empty (all items == null)
      */
     private void shiftUp() {
-        for (int y = 1 ; y < rows ; y++) {
-            for (int x = 0 ; x < cols ; x++) {
+        for (int y = 1 ; y < rows.get() ; y++) {
+            for (int x = 0 ; x < cols.get() ; x++) {
                 matrix[x][y - 1] = matrix[x][y];
             }
         }
@@ -713,19 +715,19 @@ public class ObservableMatrix<T> {
 
     private void checkForRemovedColumnsAndRows(final int removedItemCol, final int removedItemRow, final boolean notify) {
         int nullItemCounter = 0;
-        for (int r = 0 ; r < rows ; r++) {
+        for (int r = 0 ; r < rows.get() ; r++) {
             if (null == getItemAt(removedItemCol, r)) { nullItemCounter++; }
         }
-        if (nullItemCounter == rows) {
+        if (nullItemCounter == rows.get()) {
             removeCol(removedItemCol, notify);
             return;
         }
 
         nullItemCounter = 0;
-        for (int c = 0 ; c < cols ; c++) {
+        for (int c = 0 ; c < cols.get() ; c++) {
             if (null == getItemAt(c, removedItemRow)) { nullItemCounter++; }
         }
-        if (nullItemCounter == cols) {
+        if (nullItemCounter == cols.get()) {
             removeRow(removedItemRow, notify);
             return;
         }
@@ -805,8 +807,8 @@ public class ObservableMatrix<T> {
 
     @Override public String toString() {
         StringBuilder output = new StringBuilder();
-        for (int y = 0 ; y < rows ; y++) {
-            for (int x = 0 ; x < cols ; x++) {
+        for (int y = 0 ; y < rows.get() ; y++) {
+            for (int x = 0 ; x < cols.get() ; x++) {
                 output.append(matrix[x][y]).append(" ");
             }
             output.append("\n");

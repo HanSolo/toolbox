@@ -21,7 +21,6 @@ package eu.hansolo.toolbox.properties;
 
 public class ReadOnlyCharProperty extends ReadOnlyProperty<Character> {
     protected CharProperty propertyToUpdate;
-    protected boolean      bidirectional;
 
 
     // ******************** Constructors **************************************

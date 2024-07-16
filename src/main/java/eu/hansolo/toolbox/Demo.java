@@ -68,6 +68,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static eu.hansolo.toolbox.unit.Category.BLOOD_GLUCOSE;
 import static eu.hansolo.toolbox.unit.Category.LENGTH;
@@ -191,10 +192,10 @@ public class Demo {
         doubleProperty.set(20);
 
         System.out.println("\nobjectProperty.set(Hallo)");
-        objectProperty.set(new String("Hallo"));
+        objectProperty.set("Hallo");
 
         System.out.println("\nobjectProperty.set(Test)");
-        objectProperty.set(new String("Test"));
+        objectProperty.set("Test");
 
         System.out.println("\nobjectProperty.set(Bla)");
         objectProperty.set("Bla");

@@ -21,7 +21,6 @@ package eu.hansolo.toolbox.properties;
 
 public class ReadOnlyFloatProperty extends ReadOnlyProperty<Float> {
     protected FloatProperty propertyToUpdate;
-    protected boolean       bidirectional;
 
 
     // ******************** Constructors **************************************

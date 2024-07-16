@@ -78,13 +78,13 @@ public class GeoLocationBuilder<B extends GeoLocationBuilder<B>> {
         GeoLocation location = new GeoLocation();
         properties.forEach((key, property) -> {
             switch(key) {
-                case "name"      -> location.setName(((StringProperty) properties.get(key)).get());
-                case "timestamp" -> location.setTimestamp(((LongProperty) properties.get(key)).get());
-                case "latitude"  -> location.setLatitude(((DoubleProperty) properties.get(key)).get());
-                case "longitude" -> location.setLongitude(((DoubleProperty) properties.get(key)).get());
-                case "altitude"  -> location.setAltitude(((DoubleProperty) properties.get(key)).get());
-                case "accuracy"  -> location.setAccuracy(((DoubleProperty) properties.get(key)).get());
-                case "info"      -> location.setInfo(((StringProperty) properties.get(key)).get());
+                case "name"      -> location.setName(((StringProperty) property).get());
+                case "timestamp" -> location.setTimestamp(((LongProperty) property).get());
+                case "latitude"  -> location.setLatitude(((DoubleProperty) property).get());
+                case "longitude" -> location.setLongitude(((DoubleProperty) property).get());
+                case "altitude"  -> location.setAltitude(((DoubleProperty) property).get());
+                case "accuracy"  -> location.setAccuracy(((DoubleProperty) property).get());
+                case "info"      -> location.setInfo(((StringProperty) property).get());
             }
         });
         return location;

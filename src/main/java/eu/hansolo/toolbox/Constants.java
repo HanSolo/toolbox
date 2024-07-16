@@ -144,11 +144,13 @@ public class Constants {
     public static final String             INDENTED_QUOTES          = "  \"";
     public static final String             QUOTES                   = "\"";
     public static final String             QUOTES_COLON             = "\":";
+    public static final String             QUOTES_COLON_QUOTES      = "\":\"";
     public static final String             COLON                    = ":";
     public static final String             COMMA                    = ",";
     public static final String             SLASH                    = "/";
     public static final String             NEW_LINE                 = "\n";
     public static final String             COMMA_NEW_LINE           = ",\n";
+    public static final String             NULL                     = "null";
     public static final String             INDENT                   = "  ";
     public static final String             PERCENTAGE               = "\u0025";
     public static final String             DEGREE                   = "\u00B0";

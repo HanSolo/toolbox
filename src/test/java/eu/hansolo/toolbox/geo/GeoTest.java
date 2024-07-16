@@ -23,6 +23,7 @@ import eu.hansolo.toolbox.evt.type.GeoLocationChangeEvt;
 import org.junit.jupiter.api.Test;
 
 import java.time.DayOfWeek;
+import java.time.Instant;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.Locale;
@@ -97,6 +98,5 @@ public class GeoTest {
         // Move location2 outside fence
         location2.set(51.911757, 7.633701);
         assert !geoFence.isInFence(location2);
-
     }
 }

@@ -74,26 +74,26 @@ public class GeoFenceEvt extends ChangeEvt {
     // ******************** Methods *******************************************
     @Override public EvtType<? extends GeoLocationChangeEvt> getEvtType() { return (EvtType<? extends GeoLocationChangeEvt>) super.getEvtType(); }
 
-    public Optional<String> getOldName() { return NAME_CHANGED.equals(this.evtType) ? Optional.of((String) this.oldValue) : null; }
-    public Optional<String> getNewName() { return NAME_CHANGED.equals(this.evtType) ? Optional.of((String) this.newValue) : null; }
+    public Optional<String> getOldName() { return NAME_CHANGED.equals(this.evtType) ? Optional.of((String) this.oldValue) : Optional.empty(); }
+    public Optional<String> getNewName() { return NAME_CHANGED.equals(this.evtType) ? Optional.of((String) this.newValue) : Optional.empty(); }
 
-    public Optional<String> getOldInfo() { return INFO_CHANGED.equals(this.evtType) ? Optional.of((String) this.oldValue) : null; }
-    public Optional<String> getNewInfo() { return INFO_CHANGED.equals(this.evtType) ? Optional.of((String) this.newValue) : null; }
+    public Optional<String> getOldInfo() { return INFO_CHANGED.equals(this.evtType) ? Optional.of((String) this.oldValue) : Optional.empty(); }
+    public Optional<String> getNewInfo() { return INFO_CHANGED.equals(this.evtType) ? Optional.of((String) this.newValue) : Optional.empty(); }
 
-    public Optional<String> getOldGroup() { return GROUP_CHANGED.equals(this.evtType) ? Optional.of((String) this.oldValue) : null; }
-    public Optional<String> getNewGroup() { return GROUP_CHANGED.equals(this.evtType) ? Optional.of((String) this.newValue) : null; }
+    public Optional<String> getOldGroup() { return GROUP_CHANGED.equals(this.evtType) ? Optional.of((String) this.oldValue) : Optional.empty(); }
+    public Optional<String> getNewGroup() { return GROUP_CHANGED.equals(this.evtType) ? Optional.of((String) this.newValue) : Optional.empty(); }
 
-    public Optional<Boolean> getOldTimeBased() { return TIME_BASED_CHANGED.equals(this.evtType) ? Optional.of((Boolean) this.oldValue) : null; }
-    public Optional<Boolean> getNewTimeBased() { return TIME_BASED_CHANGED.equals(this.evtType) ? Optional.of((Boolean) this.newValue) : null; }
+    public Optional<Boolean> getOldTimeBased() { return TIME_BASED_CHANGED.equals(this.evtType) ? Optional.of((Boolean) this.oldValue) : Optional.empty(); }
+    public Optional<Boolean> getNewTimeBased() { return TIME_BASED_CHANGED.equals(this.evtType) ? Optional.of((Boolean) this.newValue) : Optional.empty(); }
 
-    public Optional<LocalTime> getOldStartTime() { return START_TIME_CHANGED.equals(this.evtType) ? Optional.of((LocalTime) this.oldValue) : null; }
-    public Optional<LocalTime> getNewStartTime() { return START_TIME_CHANGED.equals(this.evtType) ? Optional.of((LocalTime) this.newValue) : null; }
+    public Optional<LocalTime> getOldStartTime() { return START_TIME_CHANGED.equals(this.evtType) ? Optional.of((LocalTime) this.oldValue) : Optional.empty(); }
+    public Optional<LocalTime> getNewStartTime() { return START_TIME_CHANGED.equals(this.evtType) ? Optional.of((LocalTime) this.newValue) : Optional.empty(); }
 
-    public Optional<LocalTime> getOldEndTime() { return END_TIME_CHANGED.equals(this.evtType) ? Optional.of((LocalTime) this.oldValue) : null; }
-    public Optional<LocalTime> getNewEndTime() { return END_TIME_CHANGED.equals(this.evtType) ? Optional.of((LocalTime) this.newValue) : null; }
+    public Optional<LocalTime> getOldEndTime() { return END_TIME_CHANGED.equals(this.evtType) ? Optional.of((LocalTime) this.oldValue) : Optional.empty(); }
+    public Optional<LocalTime> getNewEndTime() { return END_TIME_CHANGED.equals(this.evtType) ? Optional.of((LocalTime) this.newValue) : Optional.empty(); }
 
-    public Optional<ZoneId> getOldZoneId() { return ZONE_ID_CHANGED.equals(this.evtType) ? Optional.of((ZoneId) this.oldValue) : null; }
-    public Optional<ZoneId> getNewZoneId() { return ZONE_ID_CHANGED.equals(this.evtType) ? Optional.of((ZoneId) this.newValue) : null; }
+    public Optional<ZoneId> getOldZoneId() { return ZONE_ID_CHANGED.equals(this.evtType) ? Optional.of((ZoneId) this.oldValue) : Optional.empty(); }
+    public Optional<ZoneId> getNewZoneId() { return ZONE_ID_CHANGED.equals(this.evtType) ? Optional.of((ZoneId) this.newValue) : Optional.empty(); }
 
     public Optional<Boolean> getWasActive() { return ACTIVE_CHANGED.equals(this.evtType) ? Optional.of((Boolean) this.oldValue) : Optional.empty(); }
     public Optional<Boolean> isActive() { return ACTIVE_CHANGED.equals(this.evtType) ? Optional.of((Boolean) this.newValue) : Optional.empty(); }

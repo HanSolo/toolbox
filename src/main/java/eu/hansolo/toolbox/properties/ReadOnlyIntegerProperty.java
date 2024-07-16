@@ -21,7 +21,6 @@ package eu.hansolo.toolbox.properties;
 
 public class ReadOnlyIntegerProperty extends ReadOnlyProperty<Integer> {
     protected IntegerProperty propertyToUpdate;
-    protected boolean         bidirectional;
 
 
     // ******************** Constructors **************************************

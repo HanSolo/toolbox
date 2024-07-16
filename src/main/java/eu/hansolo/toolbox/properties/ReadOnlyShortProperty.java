@@ -21,7 +21,6 @@ package eu.hansolo.toolbox.properties;
 
 public class ReadOnlyShortProperty extends ReadOnlyProperty<Short> {
     protected ShortProperty propertyToUpdate;
-    protected boolean       bidirectional;
 
 
     // ******************** Constructors **************************************
