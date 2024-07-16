@@ -167,8 +167,6 @@ publishing {
                 credentials {
                     username = null == ciOssrhUsername ? ossrhToken         : ciOssrhUsername
                     password = null == ciOssrhPassword ? ossrhTokenPassword : ciOssrhPassword
-                    //username = null == ciOssrhUsername ? ossrhUsername : ciOssrhUsername
-                    //password = null == ciOssrhPassword ? ossrhPassword : ciOssrhPassword
                 }
             } catch (Exception e) {
 
