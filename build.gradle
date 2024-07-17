@@ -6,7 +6,7 @@ plugins {
     id 'application'
     id 'maven-publish'
     id 'signing'
-    id 'net.nemerosa.versioning' version '3.0.0'
+    id 'net.nemerosa.versioning' version '3.1.0'
 }
 
 apply plugin: 'maven-publish'
