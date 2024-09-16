@@ -479,13 +479,13 @@ public class Helper {
     }
 
     public static final String secondsToHHMMString(final long seconds) {
-        long[] hhmmss = secondsToHHMMSS(seconds);
+        final long[] hhmmss = secondsToHHMMSS(seconds);
         return String.format("%02d:%02d:%02d", hhmmss[0], hhmmss[1], hhmmss[2]);
     }
     public static final long[] secondsToHHMMSS(final long seconds) {
-        long secs    = seconds % 60;
-        long minutes = (secs / 60) % 60;
-        long hours   = (secs / (60 * 60)) % 24;
+        final long hours   = seconds / 3600;
+        final long minutes = (seconds % 3600) / 60;
+        final long secs    = seconds % 60;
         return new long[] { hours, minutes, secs };
     }
 
