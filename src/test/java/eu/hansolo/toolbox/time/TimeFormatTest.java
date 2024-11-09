@@ -18,6 +18,7 @@
 
 package eu.hansolo.toolbox.time;
 
+import eu.hansolo.toolbox.Helper;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalTime;
@@ -34,5 +35,16 @@ public class TimeFormatTest {
         assert "12:03".equals(Times.HH_mm.format(time));
         assert "120300".equals(Times.HHmmss.format(time));
         assert "120300.0000".equals(Times.HHmmss_SSSS.format(time));
+    }
+
+    @Test
+    void testSecondsToFormats() {
+        System.out.println("\n------------------- seconds test -------------------");
+        final long seconds1 = 2_167_592;
+
+        assert "25:02:06".equals(Helper.secondsToDDHHMMString(seconds1));
+        assert "25:02:06:32".equals(Helper.secondsToDDHHMMSSString(seconds1));
+        assert "02:06".equals(Helper.secondsToHHMMString(seconds1));
+        assert "02:06:32".equals(Helper.secondsToHHMMSSString(seconds1));
     }
 }

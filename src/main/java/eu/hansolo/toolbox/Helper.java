@@ -478,15 +478,56 @@ public class Helper {
         return maxEntry.getKey();
     }
 
-    public static final String secondsToHHMMString(final long seconds) {
+    public static final String secondsToHHMMSSString(final long seconds) {
         final long[] hhmmss = secondsToHHMMSS(seconds);
         return String.format("%02d:%02d:%02d", hhmmss[0], hhmmss[1], hhmmss[2]);
     }
     public static final long[] secondsToHHMMSS(final long seconds) {
-        final long hours   = seconds / 3600;
-        final long minutes = (seconds % 3600) / 60;
         final long secs    = seconds % 60;
+        final long minutes = (seconds / 60) % 60;
+        final long hours   = (seconds / 3600) % 24;
         return new long[] { hours, minutes, secs };
+    }
+
+    public static final String secondsToHHMMString(final long seconds) {
+        final long[] hhmmss = secondsToHHMM(seconds);
+        return String.format("%02d:%02d", hhmmss[0], hhmmss[1]);
+    }
+    public static final long[] secondsToHHMM(final long seconds) {
+        final long minutes = (seconds / 60) % 60;
+        final long hours   = (seconds / 3600) % 24;
+        return new long[] { hours, minutes };
+    }
+
+    public static final String secondsToDDHHMMSSString(final long seconds) {
+        final long[] ddhhmm = secondsToDDHHMMSS(seconds);
+        if (ddhhmm[0] == 0) {
+            return String.format("%02d:%02d:%02d", ddhhmm[1], ddhhmm[2], ddhhmm[3]);
+        } else {
+            return String.format("%02d:%02d:%02d:%02d", ddhhmm[0], ddhhmm[1], ddhhmm[2], ddhhmm[3]);
+        }
+    }
+    public static final long[] secondsToDDHHMMSS(final long seconds) {
+        final long secs    = seconds % 60;
+        final long minutes = (seconds / 60) % 60;
+        final long hours   = (seconds / 3_600) % 24;
+        final long days    = (seconds / 86_400);
+        return new long[] { days, hours, minutes, secs };
+    }
+
+    public static final String secondsToDDHHMMString(final long seconds) {
+        final long[] ddhhmm = secondsToDDHHMM(seconds);
+        if (ddhhmm[0] == 0) {
+            return String.format("%02d:%02d", ddhhmm[1], ddhhmm[2]);
+        } else {
+            return String.format("%02d:%02d:%02d", ddhhmm[0], ddhhmm[1], ddhhmm[2]);
+        }
+    }
+    public static final long[] secondsToDDHHMM(final long seconds) {
+        final long minutes = (seconds / 60) % 60;
+        final long hours   = (seconds / 3_600) % 24;
+        final long days    = (seconds / 86_400);
+        return new long[] { days, hours, minutes };
     }
 
     public static final long getCRC32Checksum(final byte[] bytes) {
