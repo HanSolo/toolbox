@@ -947,6 +947,44 @@ public class Helper {
         return CardinalDirection.NOT_FOUND;
     }
 
+    public static final double similarity(final String text1, final String text2) {
+        String longer  = text1;
+        String shorter = text2;
+        if (text1.length() < text2.length()) {
+            longer  = text2;
+            shorter = text1;
+        }
+        final int longerLength = longer.length();
+        return longerLength == 0 ? 1.0 : (longerLength - editDistance(longer, shorter)) / (double) longerLength;
+    }
+    private static final int editDistance(String text1, String text2) {
+        text1 = text1.toLowerCase();
+        text2 = text2.toLowerCase();
+
+        int[] costs = new int[text2.length() + 1];
+        for (int i = 0 ; i <= text1.length() ; i++) {
+            int lastValue = i;
+            for (int j = 0 ; j <= text2.length() ; j++) {
+                if (i == 0) {
+                    costs[j] = j;
+                } else {
+                    if (j > 0) {
+                        int newValue = costs[j - 1];
+                        if (text1.charAt(i - 1) != text2.charAt(j - 1)) {
+                            newValue = Math.min(Math.min(newValue, lastValue), costs[j]) + 1;
+                        }
+                        costs[j - 1] = lastValue;
+                                       lastValue    = newValue;
+                    }
+                }
+            }
+            if (i > 0) {
+                costs[text2.length()] = lastValue;
+            }
+        }
+        return costs[text2.length()];
+    }
+
     // private methods needed to figure out physical number of cores
     private static Integer readFromProc() {
         final String path = "/proc/cpuinfo";
