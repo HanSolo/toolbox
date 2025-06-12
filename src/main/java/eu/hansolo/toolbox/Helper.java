@@ -19,6 +19,7 @@
 package eu.hansolo.toolbox;
 
 import eu.hansolo.toolbox.Constants.Architecture;
+import eu.hansolo.toolbox.Constants.HttpStatus;
 import eu.hansolo.toolbox.Constants.OperatingMode;
 import eu.hansolo.toolbox.Constants.OperatingSystem;
 import eu.hansolo.toolbox.geo.CardinalDirection;
@@ -39,12 +40,21 @@ import java.lang.management.MemoryMXBean;
 import java.lang.management.MemoryUsage;
 import java.lang.management.OperatingSystemMXBean;
 import java.lang.management.RuntimeMXBean;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpClient.Redirect;
+import java.net.http.HttpClient.Version;
+import java.net.http.HttpRequest;
+import java.net.http.HttpRequest.Builder;
+import java.net.http.HttpResponse;
+import java.net.http.HttpResponse.BodyHandlers;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -63,6 +73,7 @@ import java.util.Comparator;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -71,6 +82,7 @@ import java.util.NavigableMap;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.concurrent.CompletionException;
 import java.util.function.Predicate;
 import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
@@ -97,6 +109,8 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 
 public class Helper {
+    private static HttpClient httpClient;
+
     private Helper() {}
 
     private static final String[] DETECT_ALPINE_CMDS       = { "/bin/sh", "-c", "cat /etc/os-release | grep 'NAME=' | grep -ic 'Alpine'" };
@@ -1120,6 +1134,44 @@ public class Helper {
             return proc.waitFor();
         } catch (InterruptedException e) {
             return 1;
+        }
+    }
+
+    public static final HttpClient createHttpClient(final Version version, final Redirect redirect, final Duration timeout) {
+        return HttpClient.newBuilder()
+                         .connectTimeout(timeout)
+                         .followRedirects(redirect)
+                         .version(version)
+                         .build();
+    }
+    public static final HttpStatus getHttpStatus(final String uri, final Map<String,String> headers, final Duration timeout) {
+        if (null == httpClient) { httpClient = createHttpClient(Version.HTTP_2, Redirect.NORMAL, Duration.ofSeconds(20)); }
+
+        final Set<String> requestHeaders = new HashSet<>();
+        headers.entrySet().forEach(entry -> {
+            final String name  = entry.getKey();
+            final String value = entry.getValue();
+            if (null != name && !name.isEmpty() && null != value && !value.isEmpty()) {
+                requestHeaders.add(name);
+                requestHeaders.add(value);
+            }
+        });
+
+        final Builder     requestBuilder = HttpRequest.newBuilder().GET().uri(URI.create(uri)).timeout(timeout);
+        headers.entrySet().forEach(entry -> requestBuilder.setHeader(entry.getKey(), entry.getValue()));
+
+        final HttpRequest request        = requestBuilder.build();
+
+        try {
+            HttpResponse<String> response = httpClient.send(request, BodyHandlers.ofString());
+            if (null != response) {
+                System.out.println(response.statusCode());
+                return HttpStatus.getFromCode(response.statusCode());
+            } else {
+                return HttpStatus.UNKNOWN;
+            }
+        } catch (CompletionException | InterruptedException | IOException e) {
+            return HttpStatus.UNKNOWN;
         }
     }
 }
