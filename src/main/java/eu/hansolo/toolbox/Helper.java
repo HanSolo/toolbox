@@ -988,7 +988,7 @@ public class Helper {
                             newValue = Math.min(Math.min(newValue, lastValue), costs[j]) + 1;
                         }
                         costs[j - 1] = lastValue;
-                                       lastValue    = newValue;
+                        lastValue    = newValue;
                     }
                 }
             }
