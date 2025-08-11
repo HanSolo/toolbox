@@ -104,7 +104,7 @@ artifacts {
 }
 
 mavenPublishing {
-    coordinates("eu.hansolo", "toolbox", "21.0.23")
+    coordinates("eu.hansolo", "toolbox", "21.0.25")
 
     pom {
         name = "Toolbox"
