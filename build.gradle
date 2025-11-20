@@ -29,8 +29,9 @@ repositories {
 }
 
 dependencies {
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.10.3'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.10.3'
+    testImplementation platform('org.junit:junit-bom:5.10.3')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
 application {
@@ -80,19 +81,21 @@ if (JavaVersion.current().isJava8Compatible()) {
 
 
 // start the demo from gradle
-task Demo(type: JavaExec) {
+tasks.register('Demo', JavaExec) {
     mainClass = "eu.hansolo.toolbox.Demo"
     classpath = sourceSets.main.runtimeClasspath
 }
 
 // create one jar for the javadoc
-task javadocJar(type: Jar, dependsOn: javadoc) {
+tasks.register('javadocJar', Jar) {
+    dependsOn tasks.javadoc
     archiveClassifier = 'javadoc'
     from javadoc.destinationDir
 }
 
 // create one jar for the source files
-task sourcesJar(type: Jar, dependsOn: classes) {
+tasks.register('sourcesJar', Jar) {
+    dependsOn tasks.classes
     archiveClassifier = 'sources'
     from sourceSets.main.allSource
 }
@@ -104,7 +107,7 @@ artifacts {
 }
 
 mavenPublishing {
-    coordinates("eu.hansolo", "toolbox", "21.0.25")
+    coordinates("eu.hansolo", "toolbox", "${version}")
 
     pom {
         name = "Toolbox"
@@ -132,4 +135,8 @@ mavenPublishing {
             developerConnection = "scm:git:ssh://git@github.com/HanSolo/toolbox.git"
         }
     }
+}
+
+test {
+    useJUnitPlatform()
 }

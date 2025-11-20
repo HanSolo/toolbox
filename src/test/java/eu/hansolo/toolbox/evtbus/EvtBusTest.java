@@ -23,6 +23,7 @@ import eu.hansolo.toolbox.evt.EvtType;
 import eu.hansolo.toolbox.evt.type.ChangeEvt;
 import org.junit.jupiter.api.Test;
 
+import java.io.Serial;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -100,6 +101,7 @@ public class EvtBusTest {
             public static final EvtType<TopicEvt> ANY        = new EvtType<>(ChangeEvt.ANY, "ANY");
             public static final EvtType<TopicEvt> NEW_MSG    = new EvtType<>(TopicEvt.ANY, "NEW_MSG");
             public static final EvtType<TopicEvt> UPDATE_MSG = new EvtType<>(TopicEvt.ANY, "UPDATE_MSG");
+            @Serial private static final long serialVersionUID = -7265748397902083764L;
 
             private final Msg msg;
 
@@ -192,7 +194,7 @@ public class EvtBusTest {
             // ******************** Methods *******************************************
             public String getName() { return name; }
 
-            @Override public EvtType<Evt> getEvtType() { return evtType; }
+            @Override public EvtType getEvtType() { return evtType; }
 
             @Override public void handle(final Evt evt) {
                 TopicEvt topicEvt = (TopicEvt) evt;

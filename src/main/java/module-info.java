@@ -3,6 +3,7 @@ module eu.hansolo.toolbox {
     requires java.base;
     requires java.management;
     requires java.net.http;
+    requires java.logging;
 
     exports eu.hansolo.toolbox.evtbus;
     exports eu.hansolo.toolbox.evt.type;

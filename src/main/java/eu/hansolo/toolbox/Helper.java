@@ -447,7 +447,7 @@ public class Helper {
     }
 
     public static final int getWeekOfYear(final ZonedDateTime zonedDateTime) { return getWeekOfYear(zonedDateTime.toInstant(), zonedDateTime.getZone()); }
-    public static final int getWeekOfYeear(final Instant instant) { return getWeekOfYear(instant, ZoneId.systemDefault()); }
+    public static final int getWeekOfYear(final Instant instant) { return getWeekOfYear(instant, ZoneId.systemDefault()); }
     public static final int getWeekOfYear(final Instant instant, final ZoneId zoneId) { return getWeekOfYear(LocalDate.ofInstant(instant, zoneId)); }
     public static final int getWeekOfYear(final LocalDateTime dateTime) { return getWeekOfYear(dateTime.toLocalDate()); }
     public static final int getWeekOfYear(final LocalDate date) { return date.get(ChronoField.ALIGNED_WEEK_OF_YEAR); }
