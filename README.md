@@ -17,6 +17,7 @@ Toolbox contains different useful classes and methods e.g.
 - GeoLocation to store lat/lon coordinates and do simple calculations eu.hansolo.toolbox.geo
 - GeoFence to check GeoLocations against polygons eu.hansolo.toolbox.geo
 - System info (incl. architecture, logical and physical cores, memory info, filesystem info and jvm info)
+- NMEA parser that parses the common NMEA sentences from a GPS receiver
 
 For some of the tools you will find implementations in the test package e.g. the EventBus.
 

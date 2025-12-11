@@ -21,6 +21,9 @@ package eu.hansolo.toolbox.nmea;
 import eu.hansolo.toolbox.evt.type.NmeaEvt;
 import org.junit.jupiter.api.Test;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+
 
 public class NmeaTest {
     @Test
@@ -203,7 +206,8 @@ public class NmeaTest {
                                $GNGSA,A,3,79,,,,,,,,,,,,4.4,1.4,4.1*22
                                """;
 
-        NmeaManager nmeaManager = NmeaManager.INSTANCE;
+        AtomicBoolean valid       = new AtomicBoolean(true);
+        NmeaManager   nmeaManager = NmeaManager.INSTANCE;
         nmeaManager.addNmeaObserver(NmeaEvt.ANY, e -> {
             switch (e.getSource()) {
                 case GGA gga -> System.out.println(gga);
@@ -212,10 +216,10 @@ public class NmeaTest {
                 case GSV gsv -> System.out.println(gsv);
                 case RMC rmc -> System.out.println(rmc);
                 case VTG vtg -> System.out.println(vtg);
-                default      -> System.out.println("Unknown NMEA Sentence");
+                default      -> valid.set(false);
             }
         });
         nmeaTxt.lines().forEach(line -> nmeaManager.parse(line));
-        assert nmeaTxt.lines().count() == 175;
+        assert valid.get();
     }
 }
