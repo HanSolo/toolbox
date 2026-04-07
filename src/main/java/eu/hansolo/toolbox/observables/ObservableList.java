@@ -98,7 +98,7 @@ public class ObservableList<T> implements List<T>, RandomAccess, Cloneable {
     }
 
     public int addAllAbsent(final Collection<T> collection) {
-        final List<T> addedElements = list.stream().filter(element -> !collection.contains(element)).collect(Collectors.toList());
+        final List<T> addedElements = collection.stream().filter(element -> !list.contains(element)).collect(Collectors.toList());
         final int result = list.addAllAbsent(collection);
         fireListChangeEvt(new ListChangeEvt<>(ObservableList.this, ListChangeEvt.ADDED, addedElements, List.of()));
         return result;

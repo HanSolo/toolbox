@@ -127,7 +127,7 @@ public class Range {
 
     @Override public String toString() {
         return new StringBuilder().append(CURLY_BRACKET_OPEN)
-                                  .append(QUOTES).append("min").append(QUOTES_COLON).append(getMax()).append(COMMA)
+                                  .append(QUOTES).append("min").append(QUOTES_COLON).append(getMin()).append(COMMA)
                                   .append(QUOTES).append("max").append(QUOTES_COLON).append(getMax())
                                   .append(CURLY_BRACKET_CLOSE)
                                   .toString();

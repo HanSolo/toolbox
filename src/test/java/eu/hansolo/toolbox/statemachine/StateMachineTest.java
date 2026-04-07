@@ -24,6 +24,9 @@ import org.junit.jupiter.api.Test;
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 
 public class StateMachineTest {
@@ -33,8 +36,10 @@ public class StateMachineTest {
         System.out.println("\n-------------------- state machine test --------------------");
         enum MyState implements State {
             // Available states
-            IDLE("IDLE"), BUSY("BUSY"), ERROR("ERROR"), FINISHED("FINISHED");
-
+            IDLE("IDLE"),
+            BUSY("BUSY"),
+            ERROR("ERROR"),
+            FINISHED("FINISHED");
 
             // Definition of state transitions
             static {
@@ -43,8 +48,8 @@ public class StateMachineTest {
                 ERROR.canTransitionTo(IDLE, ERROR);
             }
 
-            private final String name;
-            private       Set    transitions;
+            private final String    name;
+            private       Set       transitions;
 
 
             // ******************** Constructor ***************************************
@@ -64,9 +69,9 @@ public class StateMachineTest {
 
             @Override public String getName() { return this.name; }
         }
+
         StateMachine<MyState> stateMachine = new StateMachine<>() {
             private ObjectProperty<MyState> state = new ObjectProperty<>(MyState.IDLE);
-
 
             // ******************** Public Methods ****************************
             @Override public State getState() { return this.state.get(); }
@@ -98,6 +103,13 @@ public class StateMachineTest {
             System.out.println(e.getMessage() + " -> StateMachine still in state: " + stateMachine.getState().getName());
         }
         assert stateMachine.getState() == MyState.IDLE;
+
+        try {
+            stateMachine.setState(MyState.BUSY);
+        } catch (StateChangeException e) {
+            System.out.println(e.getMessage() + " -> StateMachine still in state: " + stateMachine.getState().getName());
+        }
+        assert stateMachine.getState() == MyState.BUSY;
 
         try {
             stateMachine.setState(MyState.ERROR);
