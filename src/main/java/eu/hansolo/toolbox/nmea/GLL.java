@@ -18,6 +18,8 @@
 
 package eu.hansolo.toolbox.nmea;
 
+import eu.hansolo.toolbox.geo.GeoLocation;
+
 import static eu.hansolo.toolbox.Constants.COMMA;
 import static eu.hansolo.toolbox.Constants.CURLY_BRACKET_CLOSE;
 import static eu.hansolo.toolbox.Constants.CURLY_BRACKET_OPEN;
@@ -44,6 +46,8 @@ public enum GLL implements NmeaSentence {
 
     @Override
     public String getName() { return this.name; }
+
+    public GeoLocation getGeoLocation() { return new GeoLocation(this.latitude, this.longitude); }
 
     @Override
     public String toString() {

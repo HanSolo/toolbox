@@ -20,6 +20,7 @@ package eu.hansolo.toolbox.geo;
 
 import eu.hansolo.toolbox.properties.DoubleProperty;
 import eu.hansolo.toolbox.properties.LongProperty;
+import eu.hansolo.toolbox.properties.ObjectProperty;
 import eu.hansolo.toolbox.properties.ReadOnlyProperty;
 import eu.hansolo.toolbox.properties.StringProperty;
 
@@ -37,6 +38,11 @@ public class GeoLocationBuilder<B extends GeoLocationBuilder<B>> {
     // ******************** Methods *******************************************
     public static final GeoLocationBuilder create() {
         return new GeoLocationBuilder();
+    }
+
+    public final B geolocation(final GeoLocation geoLocation) {
+        properties.put("geolocation", new ObjectProperty<GeoLocation>(geoLocation));
+        return (B) this;
     }
 
     public final B name(final String name) {
@@ -76,6 +82,7 @@ public class GeoLocationBuilder<B extends GeoLocationBuilder<B>> {
 
     public final GeoLocation build() {
         GeoLocation location = new GeoLocation();
+        if (properties.containsKey("geolocation")) { location.set(((ObjectProperty<GeoLocation>) properties.get("geolocation")).get()); }
         properties.forEach((key, property) -> {
             switch(key) {
                 case "name"      -> location.setName(((StringProperty) property).get());
